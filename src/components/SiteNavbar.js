@@ -5,7 +5,7 @@ import logo from "../assets/logo.jpeg";
 const links = [
   { label: "Home", to: "/" },
   { label: "About", to: "/about" },
-  { label: "Our Programs", to: "#programs", type: "hash" },
+  { label: "Our Programs", to: "/programs" },
   { label: "Donate", to: "/donate" },
   { label: "Volunteer", to: "/volunteer" },
   { label: "Join Us", to: "/join-us" },
@@ -38,21 +38,15 @@ function SiteNavbar() {
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-2">
             {links.map((link) => (
               <li className="nav-item" key={link.to}>
-                {link.type === "hash" ? (
-                  <a className="nav-link" href={link.to}>
-                    {link.label}
-                  </a>
-                ) : (
-                  <NavLink
-                    to={link.to}
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
-                    end={link.to === "/"}
-                  >
-                    {link.label}
-                  </NavLink>
-                )}
+                <NavLink
+                  to={link.to}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
+                  end={link.to === "/"}
+                >
+                  {link.label}
+                </NavLink>
               </li>
             ))}
           </ul>

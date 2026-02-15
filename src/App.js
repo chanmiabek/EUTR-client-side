@@ -10,6 +10,9 @@ import WorkWithEurt from "./pages/WorkWithEurt";
 import Volunteer from "./pages/Volunteer";
 import JoinUs from "./pages/JoinUs";
 import Contact from "./pages/Contact";
+import Programs from "./pages/programs";
+import Projects from "./pages/Projects";
+import Events from "./pages/Events";
 
 function App() {
   return (
@@ -24,6 +27,9 @@ function App() {
           <Route path="/volunteer" element={<Volunteer />} />
           <Route path="/join-us" element={<JoinUs />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/programs" element={<Programs />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/events" element={<Events />} />
         </Routes>
       </main>
       <SiteFooter />
