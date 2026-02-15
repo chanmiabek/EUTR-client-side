@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import hero from "../assets/hero.jpeg";
 import gallery1 from "../assets/gallery-1.jpeg";
 import gallery2 from "../assets/gallery-2.jpeg";
@@ -9,19 +9,25 @@ const fallbackPrograms = [
     title: "Early Learning Foundations",
     copy:
       "We nurture children from age three and up with strong early childhood education, giving them the skills and confidence they need before primary school.",
-    focus: "School readiness"
+    focus: "School readiness",
+    status: "Active",
+    beneficiaries: "Children ages 3+"
   },
   {
     title: "Education Retention and Policy",
     copy:
       "We champion policies that keep children in school and rebuild foundational learning programs so every child stays on the path to success.",
-    focus: "Access and equity"
+    focus: "Access and equity",
+    status: "Active",
+    beneficiaries: "Learners at risk of dropping out"
   },
   {
     title: "Arts and Crafts Livelihoods",
     copy:
       "In Kakuma Refugee Camp, we empower women through design, crochet, and beadwork training that creates income and restores dignity.",
-    focus: "Women-led enterprise"
+    focus: "Women-led enterprise",
+    status: "Open enrollment",
+    beneficiaries: "Women-led households"
   }
 ];
 
@@ -78,12 +84,48 @@ const normalizeEvents = (data) => {
   return [];
 };
 
+const normalizePrograms = (data) => {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+};
+
+const formatProgram = (program) => ({
+  title: program?.title || "Program",
+  copy: program?.copy || program?.description || "Program details coming soon.",
+  focus: program?.focus || program?.category || "Community program",
+  status: program?.status || "Active",
+  beneficiaries: program?.beneficiaries || program?.target_group || "Community members"
+});
+
 function Home() {
+  const [programs, setPrograms] = useState(fallbackPrograms);
+  const [programsLoading, setProgramsLoading] = useState(true);
   const [events, setEvents] = useState(fallbackEvents);
   const [eventsLoading, setEventsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
+
+    const loadPrograms = async () => {
+      try {
+        const response = await fetch("/api/programs/");
+        if (!response.ok) throw new Error("Failed to load programs");
+        const data = await response.json();
+        const normalized = normalizePrograms(data);
+        if (isMounted && normalized.length) {
+          setPrograms(normalized.map(formatProgram));
+        }
+      } catch (error) {
+        if (isMounted) {
+          setPrograms(fallbackPrograms);
+        }
+      } finally {
+        if (isMounted) {
+          setProgramsLoading(false);
+        }
+      }
+    };
 
     const loadEvents = async () => {
       try {
@@ -105,6 +147,7 @@ function Home() {
       }
     };
 
+    loadPrograms();
     loadEvents();
 
     return () => {
@@ -359,12 +402,21 @@ function Home() {
             </div>
           </div>
           <div className="row gy-4">
-            {fallbackPrograms.map((program) => (
-              <div className="col-md-4 section-reveal" key={program.title}>
+            {programsLoading && (
+              <p className="text-muted">Loading programs...</p>
+            )}
+            {programs.map((program, index) => (
+              <div className="col-md-4 section-reveal" key={`${program.title}-${index}`}>
                 <div className="program-card">
                   <div className="badge-pill mb-3">{program.focus}</div>
                   <h4>{program.title}</h4>
                   <p className="text-muted">{program.copy}</p>
+                  <p className="text-muted mb-2">
+                    <strong>Status:</strong> {program.status}
+                  </p>
+                  <p className="text-muted mb-3">
+                    <strong>Who it serves:</strong> {program.beneficiaries}
+                  </p>
                   <button className="btn btn-outline-light btn-sm">
                     Learn more
                   </button>

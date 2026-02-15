@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import gallery2 from "../assets/gallery-2.jpeg";
 import aboutImage from "../assets/about.jpeg";
 
@@ -47,7 +47,28 @@ const fallbackTeam = [
   }
 ];
 
+const fallbackPrograms = [
+  {
+    title: "Early Learning Foundations",
+    focus: "School readiness"
+  },
+  {
+    title: "Education Retention and Policy",
+    focus: "Access and equity"
+  },
+  {
+    title: "Arts and Crafts Livelihoods",
+    focus: "Women-led enterprise"
+  }
+];
+
 const normalizeTeam = (data) => {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+};
+
+const normalizePrograms = (data) => {
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.results)) return data.results;
   return [];
@@ -56,6 +77,8 @@ const normalizeTeam = (data) => {
 function About() {
   const [team, setTeam] = useState(fallbackTeam);
   const [teamLoading, setTeamLoading] = useState(true);
+  const [programs, setPrograms] = useState(fallbackPrograms);
+  const [programsLoading, setProgramsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -81,6 +104,41 @@ function About() {
     };
 
     loadTeam();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPrograms = async () => {
+      try {
+        const response = await fetch("/api/programs/");
+        if (!response.ok) throw new Error("Failed to load programs");
+        const data = await response.json();
+        const normalized = normalizePrograms(data);
+        if (isMounted && normalized.length) {
+          setPrograms(
+            normalized.slice(0, 3).map((program) => ({
+              title: program?.title || "Program",
+              focus: program?.focus || program?.category || "Community program"
+            }))
+          );
+        }
+      } catch (error) {
+        if (isMounted) {
+          setPrograms(fallbackPrograms);
+        }
+      } finally {
+        if (isMounted) {
+          setProgramsLoading(false);
+        }
+      }
+    };
+
+    loadPrograms();
 
     return () => {
       isMounted = false;
@@ -210,10 +268,15 @@ function About() {
             <div className="col-lg-5">
               <div className="cover-card">
                 <h5>Program Focus</h5>
+                {programsLoading && (
+                  <p className="text-muted mb-2">Loading programs...</p>
+                )}
                 <ul className="list-unstyled mb-0">
-                  <li className="mb-2">Early learning foundations</li>
-                  <li className="mb-2">School retention support</li>
-                  <li className="mb-2">Arts and crafts livelihoods</li>
+                  {programs.map((program, index) => (
+                    <li className="mb-2" key={`${program.title}-${index}`}>
+                      {program.title} ({program.focus})
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
