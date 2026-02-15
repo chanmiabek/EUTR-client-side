@@ -173,21 +173,6 @@ function Volunteer() {
                   We provide orientation, facilitation tools, and ongoing coaching.
                 </p>
               </div>
-              <div className="support-card mt-3">
-                <h4>Scheduling</h4>
-                <p className="text-muted">
-                  Flexible weekly sessions and remote support roles.
-                </p>
-              </div>
-              <div className="support-card mt-3">
-                <h4>Community Support</h4>
-                <p className="text-muted">
-                  Join a network of volunteers and local leaders.
-                </p>
-                <small className="text-muted d-block mt-2">
-                  Endpoint: POST /api/volunteer/
-                </small>
-              </div>
             </div>
           </div>
         </div>

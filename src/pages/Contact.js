@@ -125,12 +125,7 @@ function Contact() {
               </form>
             </div>
             <div className="col-lg-6">
-              <div className="program-card">
-                <h4>Backend integration</h4>
-                <p className="text-muted">Suggested endpoint: POST /api/contact/</p>
-                <p className="text-muted">
-                  Payload: name, email, message, source, and timestamp.
-                </p>
+              
                 <div className="support-card">
                   <h5 className="mb-3">Visit a community hub</h5>
                   <p className="text-muted">
@@ -147,7 +142,6 @@ function Contact() {
               </div>
             </div>
           </div>
-        </div>
       </section>
     </div>
   );

@@ -163,20 +163,14 @@ function JoinUs() {
                 </div>
               </form>
             </div>
-            <div className="col-lg-6">
+              <div className="col-lg-6">
               <div className="program-card">
                 <h4>Opportunities</h4>
                 <p className="text-muted">
                   We recruit locally for program, operations, and storytelling
                   roles aligned to community impact.
                 </p>
-                <div className="support-card mt-3">
-                  <h5 className="mb-3">Backend integration</h5>
-                  <p className="text-muted">Endpoint: POST /api/join-us/</p>
-                  <p className="text-muted">
-                    Payload: name, email, phone, interest, startDate, message.
-                  </p>
-                </div>
+               
               </div>
             </div>
           </div>
