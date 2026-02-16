@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
 import PageHero from "../components/PageHero";
 
 const initialForm = {
@@ -7,9 +9,13 @@ const initialForm = {
   email: "",
   amount: "",
   currency: "USD",
-  paymentMethod: "Bank",
+  paymentMethod: "Visa",
   paymentToken: ""
 };
+
+const stripePromise = loadStripe(
+  process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_live_your_publishable_key"
+);
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -22,12 +28,49 @@ const getCookie = (name) => {
 
 function Donate() {
   const [form, setForm] = useState(initialForm);
+  const [method, setMethod] = useState("visa");
+  const [phone, setPhone] = useState("");
   const [status, setStatus] = useState({ type: "idle", message: "" });
   const [submitting, setSubmitting] = useState(false);
+
+  const cardElementOptions = useMemo(
+    () => ({
+      style: {
+        base: {
+          fontSize: "16px",
+          color: "#1f2937",
+          "::placeholder": { color: "#9ca3af" }
+        },
+        invalid: { color: "#dc2626" }
+      }
+    }),
+    []
+  );
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleMethodSelect = (nextMethod) => {
+    setMethod(nextMethod);
+    const paymentMethodMap = {
+      visa: "Visa",
+      paypal: "PayPal",
+      mpesa: "M-Pesa",
+      bank: "Bank"
+    };
+
+    setForm((prev) => ({
+      ...prev,
+      paymentMethod: paymentMethodMap[nextMethod] || prev.paymentMethod,
+      paymentToken:
+        nextMethod === "mpesa"
+          ? phone
+          : nextMethod === "visa"
+          ? prev.paymentToken
+          : ""
+    }));
   };
 
   const handleSubmit = async (event) => {
@@ -55,6 +98,8 @@ function Donate() {
 
       setStatus({ type: "success", message: "Donation submitted successfully." });
       setForm(initialForm);
+      setMethod("visa");
+      setPhone("");
     } catch (error) {
       setStatus({ type: "error", message: "Unable to submit donation." });
     } finally {
@@ -105,15 +150,13 @@ function Donate() {
           <div className="row gy-4 align-items-start">
             <div className="col-lg-6">
               <div className="section-title">Payment</div>
-              <h2 className="section-heading">Backend-ready payment details.</h2>
+              <h2 className="section-heading">Secure and flexible payment options</h2>
               <p className="section-copy">
-                This form is structured for easy integration with your payment
-                gateway (Stripe, Flutterwave, Paystack). Replace the placeholder
-                handler with your backend endpoint.
+                We partner with trusted payment providers to ensure your donations are processed securely and efficiently. Choose the method that works best for you, and rest assured that your support is making a difference in the lives of those we serve. 
               </p>
               <div className="program-card">
                 <h5 className="mb-3">Suggested integration</h5>
-                <p className="text-muted mb-2">POST /api/donations/</p>
+                <p className="text-muted mb-2">donations</p>
                 <p className="text-muted mb-0">
                   Payload: amount, currency, donor details, payment method, and
                   payment token.
@@ -180,19 +223,95 @@ function Donate() {
                   </div>
                   <div className="col-12">
                     <label className="form-label">Payment method</label>
-                    <select
-                      className="form-select"
-                      name="paymentMethod"
-                      value={form.paymentMethod}
-                      onChange={handleChange}
-                    >
-                      <option>Bank</option>
-                      <option>Visa</option>
-                      <option>M-Pesa</option>
-                      <option>PayPal</option>
-                    </select>
+                    <div className="d-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+                      {[
+                        { id: "visa", label: "Visa" },
+                        { id: "paypal", label: "PayPal" },
+                        { id: "mpesa", label: "M-Pesa" },
+                        { id: "bank", label: "Bank" }
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => handleMethodSelect(item.id)}
+                          className={`btn btn-sm ${
+                            method === item.id ? "btn-accent" : "btn-outline-light"
+                          }`}
+                        >
+                          <img
+                            src={`/icons/${item.id}.svg`}
+                            alt={item.label}
+                            style={{ width: "32px", height: "22px", objectFit: "contain" }}
+                          />
+                          <span className="visually-hidden">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <div className="col-12">
+                    <div className="border rounded p-3">
+                      {method === "visa" && (
+                        <Elements stripe={stripePromise}>
+                          <VisaInput
+                            onToken={(token) =>
+                              setForm((prev) => ({ ...prev, paymentToken: token || "" }))
+                            }
+                            options={cardElementOptions}
+                          />
+                        </Elements>
+                      )}
+                      {method === "paypal" && (
+                        <div>
+                          <p className="text-muted mb-2">
+                            You will be redirected to PayPal to complete payment.
+                          </p>
+                          <button
+                            type="button"
+                            className="btn btn-outline-light w-100"
+                            onClick={() =>
+                              setForm((prev) => ({
+                                ...prev,
+                                paymentToken: "paypal_redirect_pending"
+                              }))
+                            }
+                          >
+                            Continue with PayPal
+                          </button>
+                        </div>
+                      )}
+                      {method === "mpesa" && (
+                        <div>
+                          <label className="form-label">M-Pesa Phone Number</label>
+                          <input
+                            className="form-control mb-2"
+                            type="tel"
+                            placeholder="2547XXXXXXXX"
+                            value={phone}
+                            onChange={(event) => {
+                              const nextPhone = event.target.value;
+                              setPhone(nextPhone);
+                              setForm((prev) => ({ ...prev, paymentToken: nextPhone }));
+                            }}
+                          />
+                          <button type="button" className="btn btn-success w-100">
+                            Pay with M-Pesa
+                          </button>
+                        </div>
+                      )}
+                      {method === "bank" && (
+                        <button
+                          type="button"
+                          className="btn btn-primary w-100"
+                          onClick={() =>
+                            setForm((prev) => ({ ...prev, paymentToken: "plaid_connect_pending" }))
+                          }
+                        >
+                          Connect bank account
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {/* <div className="col-12">
                     <label className="form-label">Payment method token</label>
                     <input
                       className="form-control"
@@ -201,7 +320,7 @@ function Donate() {
                       onChange={handleChange}
                       placeholder="Generated by gateway SDK"
                     />
-                  </div>
+                  </div> */}
                   <div className="col-12">
                     <button className="btn btn-accent w-100" type="submit" disabled={submitting}>
                       {submitting ? "Submitting..." : "Submit donation"}
@@ -217,8 +336,7 @@ function Donate() {
                       </small>
                     )}
                     <small className="text-muted d-block mt-2">
-                      This is a UI placeholder. Connect to your backend to process
-                      payments securely.
+                       Please process your payments securely.
                     </small>
                   </div>
                 </div>
@@ -232,3 +350,39 @@ function Donate() {
 }
 
 export default Donate;
+
+function VisaInput({ onToken, options }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [cardStatus, setCardStatus] = useState("");
+
+  const createToken = async () => {
+    if (!stripe || !elements) return;
+
+    const card = elements.getElement(CardElement);
+    if (!card) return;
+
+    const { token, error } = await stripe.createToken(card);
+    if (error) {
+      setCardStatus(error.message || "Unable to validate card");
+      onToken("");
+      return;
+    }
+
+    onToken(token?.id || "");
+    setCardStatus("Card validated. Token captured.");
+  };
+
+  return (
+    <div>
+      <label className="form-label">Card details</label>
+      <div className="form-control py-3">
+        <CardElement options={options} />
+      </div>
+      <button type="button" className="btn btn-outline-light btn-sm mt-2" onClick={createToken}>
+        Validate card
+      </button>
+      {cardStatus && <small className="d-block mt-2 text-muted">{cardStatus}</small>}
+    </div>
+  );
+}

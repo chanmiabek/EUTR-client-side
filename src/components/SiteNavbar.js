@@ -19,8 +19,8 @@ function SiteNavbar() {
         <Link className="navbar-brand d-flex align-items-center" to="/">
           <img src={logo} alt="EUTR logo" />
           <div>
-            <div className="fw-bold">Educate Us To Rise (EUTR)</div>
-            <small className="text-muted">Education | Unity | Transformation</small>
+            <div className="fw-bold">EUTR</div>
+            <small className="text-muted">Education | Unity</small>
           </div>
         </Link>
         <button

@@ -152,17 +152,10 @@ function About() {
         <div className="container hero-content">
           <div className="row align-items-center gy-4">
             <div className="col-lg-7 section-reveal">
-              <div className="badge-pill mb-3">About Educate Us To Rise</div>
-              <h1 className="hero-title">
-                Educate a child today. Empower a generation tomorrow.
-              </h1>
-              <p className="hero-copy">
-                We are dedicated to nurturing young minds with the knowledge,
-                skills, and confidence they need to thrive.
-              </p>
+              <h1 className="hero-title fw-bold">About Us</h1>
               <div className="d-flex flex-wrap gap-3 mt-4">
                 <button className="btn btn-accent">Download Profile</button>
-                <button className="btn btn-outline-light">Join the Movement</button>
+                <a className="btn btn-outline-light" href="/join-us">Join the Movement</a>
               </div>
             </div>
             <div className="col-lg-5 section-reveal delay-1">
@@ -173,7 +166,7 @@ function About() {
                   success. We build learning programs that inspire curiosity,
                   unity, and mutual respect.
                 </p>
-                <div className="stats-grid">
+                {/* <div className="stats-grid">
                   <div>
                     <div className="text-muted">Learners</div>
                     <div className="fs-3 fw-bold">620+</div>
@@ -186,7 +179,7 @@ function About() {
                     <div className="text-muted">Communities</div>
                     <div className="fs-3 fw-bold">9</div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -284,7 +277,7 @@ function About() {
         </div>
       </section>
 
-      <section className="cover-section cover-section-alt">
+      <section className="cover-section cover-section-alt about-contact-section">
         <div className="container">
           <div className="row align-items-center gy-4">
             <div className="col-lg-7">
@@ -299,7 +292,7 @@ function About() {
               </div>
             </div>
             <div className="col-lg-5">
-              <div className="cover-card">
+              <div className="cover-card about-contact-card">
                 <h5>Get in touch</h5>
                 <p className="text-muted mb-2">Kakuma, Kenya</p>
                 <p className="text-muted mb-0">educateustorrise@gmail.com</p>
@@ -309,7 +302,7 @@ function About() {
         </div>
       </section>
 
-      <section className="cover-section">
+      <section className="cover-section about-join-section">
         <div className="container">
           <div className="row align-items-center gy-4">
             <div className="col-lg-7">
@@ -320,7 +313,7 @@ function About() {
                   Volunteer, mentor, or collaborate with us to expand learning
                   opportunities for every child.
                 </p>
-                <button className="btn btn-accent">Join the Movement</button>
+                <a className="btn btn-accent" href="/join-us">Join the Movement</a>
               </div>
             </div>
             <div className="col-lg-5">
@@ -337,7 +330,7 @@ function About() {
         </div>
       </section>
 
-      <section className="cover-section cover-section-alt">
+      <section className="cover-section cover-section-alt about-donate-section">
         <div className="container">
           <div className="row align-items-center gy-4">
             <div className="col-lg-7">
@@ -348,7 +341,7 @@ function About() {
                   Your support keeps learning spaces open, supplies available,
                   and families supported year-round.
                 </p>
-                <button className="btn btn-accent">Donate Now</button>
+                <a className="btn btn-accent" href="/donate">Donate Now</a>
               </div>
             </div>
             <div className="col-lg-5">

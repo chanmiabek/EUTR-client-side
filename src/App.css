@@ -401,3 +401,31 @@ main {
 .cover-section-alt::before {
   background: linear-gradient(120deg, rgba(0, 72, 128, 0.6), rgba(0, 72, 128, 0.32) 60%, rgba(0, 72, 128, 0.18));
 }
+
+.about-contact-section::before {
+  background: #004880;
+}
+
+.about-contact-section::after {
+  background: none;
+}
+
+.about-contact-section .about-contact-card {
+  background: #ffffff;
+}
+
+.about-join-section::before {
+  background: #004880;
+}
+
+.about-join-section::after {
+  background: none;
+}
+
+.about-donate-section::before {
+  background: #004880;
+}
+
+.about-donate-section::after {
+  background: none;
+}
