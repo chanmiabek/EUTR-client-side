@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
+import heroImage from "../assets/hero.jpeg";
 
 const initialForm = {
   name: "",
@@ -64,6 +65,8 @@ function Volunteer() {
         eyebrow="Volunteer"
         title="Give your time. Grow alongside the community."
         copy="Mentors, coaches, and facilitators are the heartbeat of EUTR."
+        backgroundImage={heroImage}
+        backgroundAlt="Volunteer hero"
       >
         <h5 className="mb-3">Volunteer roles</h5>
         <ul className="list-unstyled text-muted">

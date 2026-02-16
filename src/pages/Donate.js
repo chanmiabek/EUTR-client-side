@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
 import PageHero from "../components/PageHero";
+import heroImage from "../assets/hero.jpeg";
 
 const initialForm = {
   firstName: "",
@@ -113,6 +114,8 @@ function Donate() {
         eyebrow="Donate"
         title="Fuel education, protection, and opportunity."
         copy="Every gift supports community-led programs and direct family support."
+        backgroundImage={heroImage}
+        backgroundAlt="Donate hero"
       >
         <h5 className="mb-3">Giving options</h5>
         <ul className="list-unstyled text-muted mb-3">

@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
-import gallery2 from "../assets/gallery-2.jpeg";
 import aboutImage from "../assets/about.jpeg";
+import gallery1 from "../assets/gallery-1.jpeg";
+import gallery2 from "../assets/gallery-2.jpeg";
+import testimonial1 from "../assets/M A Malony.jpeg";
+import testimonial2 from "../assets/secretary.jpeg";
+import testimonial3 from "../assets/WhatsApp Image 2026-02-16 at 14.46.15.jpeg";
+import teamImage1 from "../assets/M A Malony.jpeg";
+import teamImage2 from "../assets/secretary.jpeg";
+import teamImage3 from "../assets/WhatsApp Image 2026-02-16 at 14.46.14.jpeg";
+import teamImage4 from "../assets/WhatsApp Image 2026-02-16 at 14.46.15.jpeg";
+import teamImage5 from "../assets/WhatsApp Image 2026-02-16 at 14.46.15 (1).jpeg";
+import teamImage6 from "../assets/WhatsApp Image 2026-02-16 at 14.46.15 (2).jpeg";
+import teamImage7 from "../assets/gallery-3.jpeg";
 
 const fallbackTeam = [
   {
@@ -47,18 +58,36 @@ const fallbackTeam = [
   }
 ];
 
-const fallbackPrograms = [
+const partners = [
+  { name: "Amala", mark: "AM" },
+  { name: "Faulu", mark: "FA" },
+  { name: "AReL", mark: "AR" },
+  { name: "UNHCR", mark: "UN" },
+  { name: "LWF", mark: "LW" },
+  { name: "JRS", mark: "JR" }
+];
+
+const fallbackTestimonials = [
   {
-    title: "Early Learning Foundations",
-    focus: "School readiness"
+    name: "M.A. Malony",
+    role: "Founder, EUTR",
+    image: testimonial1,
+    quote:
+      "Our mission is practical: start early, protect learning, and ensure every child in Kakuma is ready to thrive."
   },
   {
-    title: "Education Retention and Policy",
-    focus: "Access and equity"
+    name: "Linet Achieng",
+    role: "Education Lead",
+    image: testimonial2,
+    quote:
+      "When children receive foundational support, their confidence grows, attendance improves, and families stay hopeful."
   },
   {
-    title: "Arts and Crafts Livelihoods",
-    focus: "Women-led enterprise"
+    name: "Community Parent Leader",
+    role: "Parent Representative",
+    image: testimonial3,
+    quote:
+      "EUTR gives our children structure and joy. The vision is visible in every classroom and every parent meeting."
   }
 ];
 
@@ -68,17 +97,36 @@ const normalizeTeam = (data) => {
   return [];
 };
 
-const normalizePrograms = (data) => {
+const normalizeTestimonials = (data) => {
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.results)) return data.results;
   return [];
 };
 
+const resolveImage = (value) => {
+  if (!value || typeof value !== "string") return "";
+  if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
+    return value;
+  }
+  if (value.startsWith("/")) return value;
+  return `/${value}`;
+};
+
+const teamImages = [
+  teamImage1,
+  teamImage2,
+  teamImage3,
+  teamImage4,
+  teamImage5,
+  teamImage6,
+  teamImage7
+];
+
 function About() {
   const [team, setTeam] = useState(fallbackTeam);
   const [teamLoading, setTeamLoading] = useState(true);
-  const [programs, setPrograms] = useState(fallbackPrograms);
-  const [programsLoading, setProgramsLoading] = useState(true);
+  const [testimonials, setTestimonials] = useState(fallbackTestimonials);
+  const [testimonialsLoading, setTestimonialsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -113,32 +161,38 @@ function About() {
   useEffect(() => {
     let isMounted = true;
 
-    const loadPrograms = async () => {
+    const loadTestimonials = async () => {
       try {
-        const response = await fetch("/api/programs/");
-        if (!response.ok) throw new Error("Failed to load programs");
+        const response = await fetch("/api/testimonials/");
+        if (!response.ok) throw new Error("Failed to load testimonials");
         const data = await response.json();
-        const normalized = normalizePrograms(data);
+        const normalized = normalizeTestimonials(data);
         if (isMounted && normalized.length) {
-          setPrograms(
-            normalized.slice(0, 3).map((program) => ({
-              title: program?.title || "Program",
-              focus: program?.focus || program?.category || "Community program"
+          setTestimonials(
+            normalized.map((item, index) => ({
+              name: item?.name || item?.full_name || "Community Member",
+              role: item?.role || item?.title || "Community Voice",
+              image:
+                resolveImage(item?.image) ||
+                resolveImage(item?.photo) ||
+                resolveImage(item?.avatar) ||
+                teamImages[index % teamImages.length],
+              quote: item?.quote || item?.message || item?.testimonial || ""
             }))
           );
         }
       } catch (error) {
         if (isMounted) {
-          setPrograms(fallbackPrograms);
+          setTestimonials(fallbackTestimonials);
         }
       } finally {
         if (isMounted) {
-          setProgramsLoading(false);
+          setTestimonialsLoading(false);
         }
       }
     };
 
-    loadPrograms();
+    loadTestimonials();
 
     return () => {
       isMounted = false;
@@ -153,33 +207,19 @@ function About() {
           <div className="row align-items-center gy-4">
             <div className="col-lg-7 section-reveal">
               <h1 className="hero-title fw-bold">About Us</h1>
-              <div className="d-flex flex-wrap gap-3 mt-4">
-                <button className="btn btn-accent">Download Profile</button>
-                <a className="btn btn-outline-light" href="/join-us">Join the Movement</a>
-              </div>
+              <p className="hero-copy mb-0">
+                We exist to build strong educational foundations for children and
+                create resilient, united communities in Kakuma.
+              </p>
             </div>
             <div className="col-lg-5 section-reveal delay-1">
               <div className="hero-card">
                 <h5>What we believe</h5>
-                <p className="text-muted">
+                <p className="text-muted mb-0">
                   Strong foundations in early childhood education unlock lifelong
                   success. We build learning programs that inspire curiosity,
                   unity, and mutual respect.
                 </p>
-                {/* <div className="stats-grid">
-                  <div>
-                    <div className="text-muted">Learners</div>
-                    <div className="fs-3 fw-bold">620+</div>
-                  </div>
-                  <div>
-                    <div className="text-muted">Women Reached</div>
-                    <div className="fs-3 fw-bold">310</div>
-                  </div>
-                  <div>
-                    <div className="text-muted">Communities</div>
-                    <div className="fs-3 fw-bold">9</div>
-                  </div>
-                </div> */}
               </div>
             </div>
           </div>
@@ -243,116 +283,63 @@ function About() {
         </div>
       </section>
 
-      <section className="cover-section">
+      <section className="section section-tight">
         <div className="container">
-          <div className="row align-items-center gy-4">
-            <div className="col-lg-7">
-              <div className="cover-content">
-                <div className="badge-pill">Programs</div>
-                <h2 className="section-heading">Programs that build futures.</h2>
-                <p className="cover-copy">
-                  From early childhood learning to women-led enterprise, our
-                  programs respond to real community needs with long-term
-                  solutions.
-                </p>
-                <button className="btn btn-accent">Explore Programs</button>
+          <div className="section-title">Our Partners</div>
+          <h2 className="section-heading mb-4">
+            Collaboration that strengthens our impact.
+          </h2>
+          <div className="row gy-3">
+            {partners.map((partner) => (
+              <div className="col-6 col-md-4 col-lg-2" key={partner.name}>
+                <div className="partner-card">
+                  <div className="partner-logo" aria-label={`${partner.name} logo`}>
+                    {partner.mark}
+                  </div>
+                  <p className="mb-0 fw-semibold">{partner.name}</p>
+                </div>
               </div>
-            </div>
-            <div className="col-lg-5">
-              <div className="cover-card">
-                <h5>Program Focus</h5>
-                {programsLoading && (
-                  <p className="text-muted mb-2">Loading programs...</p>
-                )}
-                <ul className="list-unstyled mb-0">
-                  {programs.map((program, index) => (
-                    <li className="mb-2" key={`${program.title}-${index}`}>
-                      {program.title} ({program.focus})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="cover-section cover-section-alt about-contact-section">
+      <section className="section">
         <div className="container">
           <div className="row align-items-center gy-4">
-            <div className="col-lg-7">
-              <div className="cover-content">
-                <div className="badge-pill">Contact</div>
-                <h2 className="section-heading">Talk with our team.</h2>
-                <p className="cover-copy">
-                  Reach out for partnerships, questions, or to learn how you can
-                  support Educate Us To Rise.
-                </p>
-                <button className="btn btn-accent">Contact Us</button>
-              </div>
+            <div className="col-lg-6">
+              <img
+                src={gallery1}
+                alt="Learners in class"
+                style={{ borderRadius: "28px", border: "1px solid var(--border)" }}
+              />
             </div>
-            <div className="col-lg-5">
-              <div className="cover-card about-contact-card">
-                <h5>Get in touch</h5>
-                <p className="text-muted mb-2">Kakuma, Kenya</p>
-                <p className="text-muted mb-0">educateustorrise@gmail.com</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="cover-section about-join-section">
-        <div className="container">
-          <div className="row align-items-center gy-4">
-            <div className="col-lg-7">
-              <div className="cover-content">
-                <div className="badge-pill">Join Us</div>
-                <h2 className="section-heading">Be part of the movement.</h2>
-                <p className="cover-copy">
-                  Volunteer, mentor, or collaborate with us to expand learning
-                  opportunities for every child.
-                </p>
-                <a className="btn btn-accent" href="/join-us">Join the Movement</a>
-              </div>
-            </div>
-            <div className="col-lg-5">
-              <div className="cover-card">
-                <h5>Ways to join</h5>
-                <ul className="list-unstyled mb-0">
-                  <li className="mb-2">Volunteer in learning hubs</li>
-                  <li className="mb-2">Mentor youth leaders</li>
-                  <li className="mb-2">Partner with programs</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="cover-section cover-section-alt about-donate-section">
-        <div className="container">
-          <div className="row align-items-center gy-4">
-            <div className="col-lg-7">
-              <div className="cover-content">
-                <div className="badge-pill">Donate</div>
-                <h2 className="section-heading">Give today. Change tomorrow.</h2>
-                <p className="cover-copy">
-                  Your support keeps learning spaces open, supplies available,
-                  and families supported year-round.
-                </p>
-                <a className="btn btn-accent" href="/donate">Donate Now</a>
-              </div>
-            </div>
-            <div className="col-lg-5">
-              <div className="cover-card">
-                <h5>Giving options</h5>
-                <ul className="list-unstyled mb-0">
-                  <li className="mb-2">$30 learning kit</li>
-                  <li className="mb-2">$75 family support</li>
-                  <li className="mb-2">$150 mentorship month</li>
-                </ul>
-              </div>
+            <div className="col-lg-6">
+              <div className="section-title">How We Deliver</div>
+              <h2 className="section-heading">Three ways we drive mission to vision.</h2>
+              <ul className="list-unstyled">
+                <li className="mb-3">
+                  <h5 className="mb-1">1. School Readiness</h5>
+                  <p className="text-muted mb-0">
+                    Safe and structured learning for young children before they
+                    transition to primary school.
+                  </p>
+                </li>
+                <li className="mb-3">
+                  <h5 className="mb-1">2. Family and Community Partnership</h5>
+                  <p className="text-muted mb-0">
+                    Parent engagement, referral support, and local leadership to
+                    sustain children&apos;s learning.
+                  </p>
+                </li>
+                <li>
+                  <h5 className="mb-1">3. Protection and Opportunity</h5>
+                  <p className="text-muted mb-0">
+                    Child protection, gender-responsive programs, and practical
+                    pathways that strengthen dignity and livelihoods.
+                  </p>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -360,34 +347,65 @@ function About() {
 
       <section className="section section-tight">
         <div className="container">
-          <div className="row align-items-center gy-4">
-            <div className="col-lg-5 section-reveal">
-              <div className="section-title">Our Team</div>
-              <h2 className="section-heading">Neighbors leading the work.</h2>
-              <p className="section-copy">
-                Our team blends lived experience with professional expertise to
-                keep children learning and families supported.
-              </p>
-              {teamLoading && (
-                <p className="text-muted">Loading team members...</p>
-              )}
-            </div>
-            <div className="col-lg-7 section-reveal delay-1">
-              <div className="row gy-3">
-                {team.map((member) => (
-                  <div className="col-md-6" key={member.name}>
-                    <div className="team-card">
-                      <div className="team-avatar">{member.initials}</div>
-                      <div>
-                        <h5 className="mb-1">{member.name}</h5>
-                        <div className="text-muted mb-2">{member.role}</div>
-                        <p className="text-muted mb-0">{member.copy}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+          <div className="section-title">Testimonials</div>
+          <h2 className="section-heading mb-4">Voices from our community.</h2>
+          {testimonialsLoading && (
+            <p className="text-muted mb-3">Loading testimonials...</p>
+          )}
+          <div className="row gy-4">
+            {testimonials.map((item) => (
+              <div className="col-lg-4" key={item.name}>
+                <div className="testimonial-card">
+                  <img
+                    className="testimonial-image"
+                    src={resolveImage(item.image) || teamImages[0]}
+                    alt={`${item.name} testimonial`}
+                  />
+                  <p className="text-muted fst-italic mt-3 mb-3">&quot;{item.quote}&quot;</p>
+                  <h6 className="mb-1">{item.name}</h6>
+                  <small className="text-muted">{item.role}</small>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section section-tight">
+        <div className="container">
+          <div className="section-reveal">
+            <div className="section-title">Our Team</div>
+            <h2 className="section-heading">Neighbors leading the work.</h2>
+            <p className="section-copy mb-4">
+              Our team blends lived experience with professional expertise to
+              keep children learning and families supported.
+            </p>
+            {teamLoading && (
+              <p className="text-muted">Loading team members...</p>
+            )}
+          </div>
+          <div className="row gy-3 section-reveal delay-1">
+            {team.map((member, index) => (
+              <div className="col-md-6 col-lg-4" key={member.name}>
+                <div className="team-card">
+                  <img
+                    className="team-photo"
+                    src={
+                      resolveImage(member?.image) ||
+                      resolveImage(member?.photo) ||
+                      resolveImage(member?.avatar) ||
+                      teamImages[index % teamImages.length]
+                    }
+                    alt={member.name}
+                  />
+                  <div>
+                    <h5 className="mb-1">{member.name}</h5>
+                    <div className="text-muted mb-2">{member.role}</div>
+                    <p className="text-muted mb-0">{member.copy}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
+import heroImage from "../assets/hero.jpeg";
 
 const initialForm = {
   name: "",
@@ -61,6 +62,8 @@ function Contact() {
         eyebrow="Contact"
         title="Let us know how we can work together."
         copy="We welcome partnership inquiries, volunteer interest, and community referrals."
+        backgroundImage={heroImage}
+        backgroundAlt="Contact hero"
       >
         <h5 className="mb-3">Reach us</h5>
         <p className="text-muted mb-1">Email: hello@eutr.org</p>
@@ -125,21 +128,22 @@ function Contact() {
               </form>
             </div>
             <div className="col-lg-6">
-              
-                <div className="support-card">
-                  <h5 className="mb-3">Visit a community hub</h5>
-                  <p className="text-muted">
-                    Schedule a visit to see our learning spaces, meet families, and
-                    explore partnership opportunities.
-                  </p>
-                  <ul className="list-unstyled text-muted">
-                    <li className="mb-2"> Mondays - Fridays, 9am - 5pm</li>
-                    <li className="mb-2">Guided tours for partners</li>
-                    <li className="mb-2">Volunteer orientation every Friday</li>
-                  </ul>
-                  <button className="btn btn-outline-light btn-sm">Book a visit</button>
+              <div className="support-card">
+                <h5 className="mb-3">Our location in Kakuma</h5>
+                <p className="text-muted">
+                  Find us in Kakuma, Kenya. Use the map below for directions.
+                </p>
+                <div className="ratio ratio-4x3 rounded overflow-hidden">
+                  <iframe
+                    title="EUTR location in Kakuma"
+                    src="https://www.google.com/maps?q=Kakuma%2C%20Kenya&output=embed"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  ></iframe>
                 </div>
               </div>
+            </div>
             </div>
           </div>
       </section>

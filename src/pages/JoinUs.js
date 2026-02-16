@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
+import heroImage from "../assets/hero.jpeg";
 
 const initialForm = {
   name: "",
@@ -64,6 +65,8 @@ function JoinUs() {
         eyebrow="Join Us"
         title="Become part of the EUTR family."
         copy="Work alongside local leaders to strengthen education, wellbeing, and opportunity."
+        backgroundImage={heroImage}
+        backgroundAlt="Join us hero"
       >
         <h5 className="mb-3">Open pathways</h5>
         <p className="text-muted">
