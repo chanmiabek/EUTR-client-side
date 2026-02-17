@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getApiUrl } from "../utils/api";
 import { Link } from "react-router-dom";
 import programImage1 from "../assets/gallery-1.jpeg";
 import programImage2 from "../assets/gallery-2.jpeg";
@@ -97,7 +98,7 @@ function Programs() {
 
     const loadPrograms = async () => {
       try {
-        const response = await fetch("/api/programs/");
+        const response = await fetch(getApiUrl("/api/programs/"));
         if (!response.ok) throw new Error("Failed to load programs");
         const data = await response.json();
         const normalized = normalizePrograms(data);
@@ -189,3 +190,5 @@ function Programs() {
 }
 
 export default Programs;
+
+

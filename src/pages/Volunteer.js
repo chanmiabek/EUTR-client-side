@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
+import { getApiUrl } from "../utils/api";
 
 const initialForm = {
   name: "",
@@ -37,8 +38,9 @@ function Volunteer() {
 
     try {
       const csrfToken = getCookie("csrftoken");
-      const response = await fetch("/api/volunteer/", {
+      const response = await fetch(getApiUrl("/api/volunteer/"), {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           ...(csrfToken ? { "X-CSRFToken": csrfToken } : {})

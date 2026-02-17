@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
+import { getApiUrl } from "../utils/api";
 
 const initialForm = {
   firstName: "",
@@ -33,6 +34,87 @@ function Donate() {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState({ type: "idle", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const eventSourceRef = useRef(null);
+
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const pollPaymentStatus = async (donationId) => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await wait(2000);
+      const response = await fetch(getApiUrl(`/api/donations/${donationId}/payment-status/`), {
+        credentials: "include"
+      });
+
+      if (!response.ok) continue;
+      const data = await response.json();
+      const paymentStatus = data?.payment_status;
+
+      if (paymentStatus === "completed") {
+        setStatus({ type: "success", message: "Payment completed successfully." });
+        return;
+      }
+      if (paymentStatus === "failed") {
+        setStatus({ type: "error", message: "Payment failed. Please try again." });
+        return;
+      }
+      setStatus({ type: "pending", message: "Payment is processing in real time..." });
+    }
+  };
+
+  const closeStatusStream = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  };
+
+  useEffect(() => () => closeStatusStream(), []);
+
+  const subscribePaymentStatus = (streamEndpoint, donationId) =>
+    new Promise((resolve) => {
+      if (!streamEndpoint) {
+        pollPaymentStatus(donationId).finally(resolve);
+        return;
+      }
+
+      closeStatusStream();
+      try {
+        const source = new EventSource(streamEndpoint);
+        eventSourceRef.current = source;
+
+        source.addEventListener("status", (event) => {
+          try {
+            const payload = JSON.parse(event.data || "{}");
+            const paymentStatus = payload?.payment_status || payload?.status;
+            if (paymentStatus === "completed") {
+              setStatus({ type: "success", message: "Payment completed successfully." });
+              closeStatusStream();
+              resolve();
+            } else if (paymentStatus === "failed") {
+              setStatus({ type: "error", message: payload?.failed_reason || "Payment failed. Please try again." });
+              closeStatusStream();
+              resolve();
+            } else {
+              setStatus({ type: "pending", message: "Payment is processing in real time..." });
+            }
+          } catch {
+            setStatus({ type: "pending", message: "Payment is processing in real time..." });
+          }
+        });
+
+        source.addEventListener("end", () => {
+          closeStatusStream();
+          resolve();
+        });
+
+        source.onerror = () => {
+          closeStatusStream();
+          pollPaymentStatus(donationId).finally(resolve);
+        };
+      } catch {
+        pollPaymentStatus(donationId).finally(resolve);
+      }
+    });
 
   const cardElementOptions = useMemo(
     () => ({
@@ -80,24 +162,67 @@ function Donate() {
     setStatus({ type: "idle", message: "" });
 
     try {
+      const backendMethodMap = {
+        visa: "card",
+        paypal: "paypal",
+        mpesa: "mpesa",
+        bank: "bank"
+      };
+      const normalizedPhone = phone ? phone.trim() : "";
+      const payload = {
+        ...form,
+        amount: Number(form.amount || 0),
+        paymentMethod: method,
+        payment_method: backendMethodMap[method] || "mpesa",
+        phone: method === "mpesa" ? normalizedPhone : form.phone
+      };
+      if (method === "mpesa" && normalizedPhone) {
+        payload.paymentToken = normalizedPhone;
+      }
+
       const csrfToken = getCookie("csrftoken");
-      const response = await fetch("/api/donations/", {
+      const response = await fetch(getApiUrl("/api/donations/initiate-payment/"), {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           ...(csrfToken ? { "X-CSRFToken": csrfToken } : {})
         },
-        body: JSON.stringify({
-          ...form,
-          amount: Number(form.amount || 0)
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
         throw new Error("Donation request failed.");
       }
 
-      setStatus({ type: "success", message: "Donation submitted successfully." });
+      const data = await response.json();
+      const paymentStatus = data?.payment_status;
+      const donationId = data?.donation?.id;
+      const approvalUrl = data?.approval_url;
+      const streamEndpoint = data?.stream_endpoint;
+
+      if (paymentStatus === "completed") {
+        setStatus({ type: "success", message: "Payment completed successfully." });
+      } else if (paymentStatus === "failed") {
+        setStatus({
+          type: "error",
+          message: data?.donation?.failed_reason || "Payment failed. Please try again."
+        });
+      } else {
+        if (approvalUrl) {
+          window.open(approvalUrl, "_blank", "noopener,noreferrer");
+          setStatus({
+            type: "pending",
+            message: "PayPal opened in a new tab. Complete payment there, status will update here."
+          });
+        } else {
+          setStatus({ type: "pending", message: "Payment is processing in real time..." });
+        }
+        if (donationId) {
+          await subscribePaymentStatus(streamEndpoint, donationId);
+        }
+      }
+
       setForm(initialForm);
       setMethod("visa");
       setPhone("");
@@ -335,6 +460,11 @@ function Donate() {
                     )}
                     {status.type === "error" && (
                       <small className="text-danger d-block mt-2">
+                        {status.message}
+                      </small>
+                    )}
+                    {status.type === "pending" && (
+                      <small className="text-warning d-block mt-2">
                         {status.message}
                       </small>
                     )}

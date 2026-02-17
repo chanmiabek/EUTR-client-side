@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getApiUrl } from "../utils/api";
 
 const fallbackProjects = [
   {
@@ -33,7 +34,7 @@ function Projects() {
 
     const loadProjects = async () => {
       try {
-        const response = await fetch("/api/projects/");
+        const response = await fetch(getApiUrl("/api/projects/"));
         if (!response.ok) throw new Error("Failed to load projects");
         const data = await response.json();
         const normalized = normalizeProjects(data);
@@ -88,3 +89,5 @@ function Projects() {
 }
 
 export default Projects;
+
+

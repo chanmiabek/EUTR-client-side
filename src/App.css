@@ -7,6 +7,7 @@ main {
   padding-top: 90px;
 }
 
+
 .navbar-eutr {
   background: #ffffff;
   border-bottom: 1px solid rgba(0, 72, 128, 0.12);
@@ -441,8 +442,7 @@ main {
 @media (max-width: 768px) {
   .hero {
     padding-top: 6rem;
-  }
-
+  }`r`n
   .image-stack img:nth-child(2) {
     margin-left: 0;
   }
@@ -547,3 +547,4 @@ main {
 .about-donate-section::after {
   background: none;
 }
+

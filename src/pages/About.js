@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getApiUrl } from "../utils/api";
 import aboutImage from "../assets/about.jpeg";
 import gallery1 from "../assets/gallery-1.jpeg";
 import gallery2 from "../assets/gallery-2.jpeg";
@@ -58,13 +59,13 @@ const fallbackTeam = [
   }
 ];
 
-const partners = [
-  { name: "Amala", mark: "AM" },
-  { name: "Faulu", mark: "FA" },
-  { name: "AReL", mark: "AR" },
-  { name: "UNHCR", mark: "UN" },
-  { name: "LWF", mark: "LW" },
-  { name: "JRS", mark: "JR" }
+const fallbackPartners = [
+  { name: "Amala", mark: "AM", link: "", logo_url: "" },
+  { name: "Faulu", mark: "FA", link: "", logo_url: "" },
+  { name: "AReL", mark: "AR", link: "", logo_url: "" },
+  { name: "UNHCR", mark: "UN", link: "https://www.unhcr.org/", logo_url: "" },
+  { name: "LWF", mark: "LW", link: "", logo_url: "" },
+  { name: "JRS", mark: "JR", link: "", logo_url: "" }
 ];
 
 const fallbackTestimonials = [
@@ -103,6 +104,12 @@ const normalizeTestimonials = (data) => {
   return [];
 };
 
+const normalizePartners = (data) => {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  return [];
+};
+
 const resolveImage = (value) => {
   if (!value || typeof value !== "string") return "";
   if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
@@ -127,13 +134,15 @@ function About() {
   const [teamLoading, setTeamLoading] = useState(true);
   const [testimonials, setTestimonials] = useState(fallbackTestimonials);
   const [testimonialsLoading, setTestimonialsLoading] = useState(true);
+  const [partners, setPartners] = useState(fallbackPartners);
+  const [partnersLoading, setPartnersLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadTeam = async () => {
       try {
-        const response = await fetch("/api/team/");
+        const response = await fetch(getApiUrl("/api/team/"));
         if (!response.ok) throw new Error("Failed to load team");
         const data = await response.json();
         const normalized = normalizeTeam(data);
@@ -161,9 +170,52 @@ function About() {
   useEffect(() => {
     let isMounted = true;
 
+    const loadPartners = async () => {
+      try {
+        const response = await fetch(getApiUrl("/api/partners/"));
+        if (!response.ok) throw new Error("Failed to load partners");
+        const data = await response.json();
+        const normalized = normalizePartners(data);
+        if (isMounted && normalized.length) {
+          setPartners(
+            normalized.map((item) => ({
+              name: item?.name || "Partner",
+              link: item?.link || "",
+              logo_url: resolveImage(item?.logo_url || item?.logo || item?.image),
+              mark:
+                (item?.name || "PT")
+                  .split(" ")
+                  .map((part) => part[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase() || "PT"
+            }))
+          );
+        }
+      } catch (error) {
+        if (isMounted) {
+          setPartners(fallbackPartners);
+        }
+      } finally {
+        if (isMounted) {
+          setPartnersLoading(false);
+        }
+      }
+    };
+
+    loadPartners();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
     const loadTestimonials = async () => {
       try {
-        const response = await fetch("/api/testimonials/");
+        const response = await fetch(getApiUrl("/api/testimonials/"));
         if (!response.ok) throw new Error("Failed to load testimonials");
         const data = await response.json();
         const normalized = normalizeTestimonials(data);
@@ -289,17 +341,46 @@ function About() {
           <h2 className="section-heading mb-4">
             Collaboration that strengthens our impact.
           </h2>
+          {partnersLoading && (
+            <p className="text-muted mb-3">Loading partners...</p>
+          )}
           <div className="row gy-3">
-            {partners.map((partner) => (
-              <div className="col-6 col-md-4 col-lg-2" key={partner.name}>
+            {partners.map((partner, index) => {
+              const card = (
                 <div className="partner-card">
-                  <div className="partner-logo" aria-label={`${partner.name} logo`}>
-                    {partner.mark}
-                  </div>
+                  {partner.logo_url ? (
+                    <img
+                      src={partner.logo_url}
+                      alt={`${partner.name} logo`}
+                      style={{
+                        width: "56px",
+                        height: "56px",
+                        borderRadius: "14px",
+                        objectFit: "cover",
+                        marginBottom: "0.75rem"
+                      }}
+                    />
+                  ) : (
+                    <div className="partner-logo" aria-label={`${partner.name} logo`}>
+                      {partner.mark || partner.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
                   <p className="mb-0 fw-semibold">{partner.name}</p>
                 </div>
-              </div>
-            ))}
+              );
+
+              return (
+                <div className="col-6 col-md-4 col-lg-2" key={`${partner.name}-${index}`}>
+                  {partner.link ? (
+                    <a href={partner.link} target="_blank" rel="noreferrer" className="text-decoration-none text-reset">
+                      {card}
+                    </a>
+                  ) : (
+                    card
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -414,3 +495,6 @@ function About() {
 }
 
 export default About;
+
+
+

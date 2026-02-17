@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { getApiUrl } from "../utils/api";
 import eventImage1 from "../assets/gallery-1.jpeg";
 import eventImage2 from "../assets/gallery-2.jpeg";
 import eventImage3 from "../assets/gallery-3.jpeg";
 import heroImage from "../assets/hero.jpeg";
+import EventOverviewVideoSection from "../components/EventOverviewVideoSection";
 
 const fallbackEvents = [
   {
@@ -100,7 +102,7 @@ function Events() {
 
     const loadEvents = async () => {
       try {
-        const response = await fetch("/api/events/");
+        const response = await fetch(getApiUrl("/api/events/"));
         if (!response.ok) throw new Error("Failed to load events");
         const data = await response.json();
         const normalized = normalizeEvents(data);
@@ -182,8 +184,12 @@ function Events() {
           </div>
         </div>
       </section>
+
+      <EventOverviewVideoSection />
     </div>
   );
 }
 
 export default Events;
+
+

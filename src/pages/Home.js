@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { getApiUrl } from "../utils/api";
 import hero from "../assets/hero.jpeg";
 import gallery1 from "../assets/gallery-1.jpeg";
 import gallery2 from "../assets/gallery-2.jpeg";
 import gallery3 from "../assets/gallery-3.jpeg";
+import EventOverviewVideoSection from "../components/EventOverviewVideoSection";
 
 const fallbackPrograms = [
   {
@@ -109,7 +111,7 @@ function Home() {
 
     const loadPrograms = async () => {
       try {
-        const response = await fetch("/api/programs/");
+        const response = await fetch(getApiUrl("/api/programs/"));
         if (!response.ok) throw new Error("Failed to load programs");
         const data = await response.json();
         const normalized = normalizePrograms(data);
@@ -129,7 +131,7 @@ function Home() {
 
     const loadEvents = async () => {
       try {
-        const response = await fetch("/api/events/");
+        const response = await fetch(getApiUrl("/api/events/"));
         if (!response.ok) throw new Error("Failed to load events");
         const data = await response.json();
         const normalized = normalizeEvents(data);
@@ -459,24 +461,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <div className="film-card section-reveal">
-            <div className="row align-items-center gy-4">
-              <div className="col-lg-7">
-                <h2>Watch the Educate Us To Rise story.</h2>
-                <p className="section-copy">
-                  A short film capturing the courage, culture, and collaboration
-                  shaping our communities.
-                </p>
-              </div>
-              <div className="col-lg-5 text-lg-end">
-                <button className="btn btn-accent">Play Film</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <EventOverviewVideoSection className="section" />
 
       <section className="section section-tight">
         <div className="container">
@@ -578,3 +563,5 @@ function Home() {
 }
 
 export default Home;
+
+
