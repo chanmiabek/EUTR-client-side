@@ -1,192 +1,61 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
+import React, { useEffect, useRef, useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
 import { getApiUrl } from "../utils/api";
+
+const STRIPE_DONATION_LINK =
+  process.env.REACT_APP_STRIPE_DONATION_LINK || "https://donate.stripe.com/test_5kQ28rcEJfcAeaPdKPaVa01";
+const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "test";
+const PAYPAL_CURRENCY = process.env.REACT_APP_PAYPAL_CURRENCY || "USD";
+const PAYPAL_DONATION_LINK = process.env.REACT_APP_PAYPAL_DONATION_LINK || "https://www.paypal.com/donate";
 
 const initialForm = {
   firstName: "",
   lastName: "",
   email: "",
+  phone: "",
   amount: "",
-  currency: "USD",
-  paymentMethod: "Visa",
-  paymentToken: ""
-};
-
-const stripePromise = loadStripe(
-  process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || "pk_live_your_publishable_key"
-);
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(";").shift();
-  }
-  return "";
+  currency: "KES"
 };
 
 function Donate() {
   const [form, setForm] = useState(initialForm);
-  const [method, setMethod] = useState("visa");
-  const [phone, setPhone] = useState("");
-  const [status, setStatus] = useState({ type: "idle", message: "" });
   const [submitting, setSubmitting] = useState(false);
-  const eventSourceRef = useRef(null);
-
-  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-  const pollPaymentStatus = async (donationId) => {
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      await wait(2000);
-      const response = await fetch(getApiUrl(`/api/donations/${donationId}/payment-status/`), {
-        credentials: "include"
-      });
-
-      if (!response.ok) continue;
-      const data = await response.json();
-      const paymentStatus = data?.payment_status;
-
-      if (paymentStatus === "completed") {
-        setStatus({ type: "success", message: "Payment completed successfully." });
-        return;
-      }
-      if (paymentStatus === "failed") {
-        setStatus({ type: "error", message: "Payment failed. Please try again." });
-        return;
-      }
-      setStatus({ type: "pending", message: "Payment is processing in real time..." });
-    }
-  };
-
-  const closeStatusStream = () => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-  };
-
-  useEffect(() => () => closeStatusStream(), []);
-
-  const subscribePaymentStatus = (streamEndpoint, donationId) =>
-    new Promise((resolve) => {
-      if (!streamEndpoint) {
-        pollPaymentStatus(donationId).finally(resolve);
-        return;
-      }
-
-      closeStatusStream();
-      try {
-        const source = new EventSource(streamEndpoint);
-        eventSourceRef.current = source;
-
-        source.addEventListener("status", (event) => {
-          try {
-            const payload = JSON.parse(event.data || "{}");
-            const paymentStatus = payload?.payment_status || payload?.status;
-            if (paymentStatus === "completed") {
-              setStatus({ type: "success", message: "Payment completed successfully." });
-              closeStatusStream();
-              resolve();
-            } else if (paymentStatus === "failed") {
-              setStatus({ type: "error", message: payload?.failed_reason || "Payment failed. Please try again." });
-              closeStatusStream();
-              resolve();
-            } else {
-              setStatus({ type: "pending", message: "Payment is processing in real time..." });
-            }
-          } catch {
-            setStatus({ type: "pending", message: "Payment is processing in real time..." });
-          }
-        });
-
-        source.addEventListener("end", () => {
-          closeStatusStream();
-          resolve();
-        });
-
-        source.onerror = () => {
-          closeStatusStream();
-          pollPaymentStatus(donationId).finally(resolve);
-        };
-      } catch {
-        pollPaymentStatus(donationId).finally(resolve);
-      }
-    });
-
-  const cardElementOptions = useMemo(
-    () => ({
-      style: {
-        base: {
-          fontSize: "16px",
-          color: "#1f2937",
-          "::placeholder": { color: "#9ca3af" }
-        },
-        invalid: { color: "#dc2626" }
-      }
-    }),
-    []
-  );
+  const [status, setStatus] = useState({ type: "idle", message: "" });
+  const [paypalMessage, setPaypalMessage] = useState("");
+  const paypalContainerRef = useRef(null);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleMethodSelect = (nextMethod) => {
-    setMethod(nextMethod);
-    const paymentMethodMap = {
-      visa: "Visa",
-      paypal: "PayPal",
-      mpesa: "M-Pesa",
-      bank: "Bank"
-    };
-
-    setForm((prev) => ({
-      ...prev,
-      paymentMethod: paymentMethodMap[nextMethod] || prev.paymentMethod,
-      paymentToken:
-        nextMethod === "mpesa"
-          ? phone
-          : nextMethod === "visa"
-          ? prev.paymentToken
-          : ""
-    }));
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!form.firstName || !form.lastName || !form.phone || Number(form.amount || 0) <= 0) {
+      setStatus({ type: "error", message: "Please complete all required M-Pesa fields." });
+      return;
+    }
+
     setSubmitting(true);
     setStatus({ type: "idle", message: "" });
 
     try {
-      const backendMethodMap = {
-        visa: "card",
-        paypal: "paypal",
-        mpesa: "mpesa",
-        bank: "bank"
-      };
-      const normalizedPhone = phone ? phone.trim() : "";
       const payload = {
         ...form,
         amount: Number(form.amount || 0),
-        paymentMethod: method,
-        payment_method: backendMethodMap[method] || "mpesa",
-        phone: method === "mpesa" ? normalizedPhone : form.phone
+        paymentMethod: "mpesa",
+        payment_method: "mpesa",
+        paymentToken: form.phone,
+        phone: form.phone
       };
-      if (method === "mpesa" && normalizedPhone) {
-        payload.paymentToken = normalizedPhone;
-      }
 
-      const csrfToken = getCookie("csrftoken");
       const response = await fetch(getApiUrl("/api/donations/initiate-payment/"), {
         method: "POST",
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
-          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {})
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });
@@ -197,9 +66,6 @@ function Donate() {
 
       const data = await response.json();
       const paymentStatus = data?.payment_status;
-      const donationId = data?.donation?.id;
-      const approvalUrl = data?.approval_url;
-      const streamEndpoint = data?.stream_endpoint;
 
       if (paymentStatus === "completed") {
         setStatus({ type: "success", message: "Payment completed successfully." });
@@ -209,32 +75,111 @@ function Donate() {
           message: data?.donation?.failed_reason || "Payment failed. Please try again."
         });
       } else {
-        if (approvalUrl) {
-          window.open(approvalUrl, "_blank", "noopener,noreferrer");
-          setStatus({
-            type: "pending",
-            message: "PayPal opened in a new tab. Complete payment there, status will update here."
-          });
-        } else {
-          setStatus({ type: "pending", message: "Payment is processing in real time..." });
-        }
-        if (donationId) {
-          await subscribePaymentStatus(streamEndpoint, donationId);
-        }
+        setStatus({
+          type: "pending",
+          message: "M-Pesa prompt sent. Please complete payment on your phone."
+        });
       }
 
       setForm(initialForm);
-      setMethod("visa");
-      setPhone("");
-    } catch (error) {
-      setStatus({ type: "error", message: "Unable to submit donation." });
+    } catch {
+      setStatus({ type: "error", message: "Unable to submit M-Pesa donation." });
     } finally {
       setSubmitting(false);
     }
   };
 
+  useEffect(() => {
+    if (PAYPAL_CLIENT_ID === "test" || !paypalContainerRef.current) return undefined;
+
+    let active = true;
+    const scriptId = "paypal-sdk-script";
+    let script = document.getElementById(scriptId);
+
+    const renderButtons = () => {
+      if (!active || !window.paypal || !paypalContainerRef.current) return;
+      paypalContainerRef.current.innerHTML = "";
+
+      window.paypal
+        .Buttons({
+          createOrder: async () => {
+            try {
+              const response = await fetch(getApiUrl("/api/orders"), {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  cart: [{ id: "DONATION", quantity: "1" }]
+                })
+              });
+
+              const orderData = await response.json();
+              if (orderData.id) return orderData.id;
+
+              const errorDetail = orderData?.details?.[0];
+              const errorMessage = errorDetail
+                ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
+                : JSON.stringify(orderData);
+              throw new Error(errorMessage);
+            } catch (error) {
+              setPaypalMessage(`Could not initiate PayPal Checkout: ${error}`);
+              return "";
+            }
+          },
+          onApprove: async (data, actions) => {
+            try {
+              const response = await fetch(getApiUrl(`/api/orders/${data.orderID}/capture`), {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                }
+              });
+
+              const orderData = await response.json();
+              const errorDetail = orderData?.details?.[0];
+
+              if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
+                return actions.restart();
+              }
+
+              if (errorDetail) {
+                throw new Error(`${errorDetail.description} (${orderData.debug_id})`);
+              }
+
+              setPaypalMessage("PayPal payment completed successfully.");
+            } catch (error) {
+              setPaypalMessage(`Sorry, your transaction could not be processed: ${error}`);
+            }
+            return null;
+          },
+          onCancel: () => setPaypalMessage("PayPal payment was cancelled."),
+          onError: () => setPaypalMessage("PayPal payment failed. Please try again.")
+        })
+        .render(paypalContainerRef.current);
+    };
+
+    if (script) {
+      if (window.paypal) renderButtons();
+      else script.addEventListener("load", renderButtons, { once: true });
+    } else {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(
+        PAYPAL_CLIENT_ID
+      )}&currency=${encodeURIComponent(PAYPAL_CURRENCY)}`;
+      script.async = true;
+      script.addEventListener("load", renderButtons, { once: true });
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
-    <div>
+    <div className="app">
       <PageHero
         eyebrow="Donate"
         title="Fuel education, protection, and opportunity."
@@ -244,56 +189,52 @@ function Donate() {
       >
         <h5 className="mb-3">Giving options</h5>
         <ul className="list-unstyled text-muted mb-3">
-          <li className="mb-2"> $30 supports one learning kit.</li>
-          <li className="mb-2"> $75 funds a wellness visit.</li>
-          <li className="mb-2">  $150 powers a month of mentorship.</li>
+          <li className="mb-2">KES 500 supports one learning kit.</li>
+          <li className="mb-2">KES 1,200 funds a wellness visit.</li>
+          <li className="mb-2">KES 3,000 powers a month of mentorship.</li>
         </ul>
-        <button className="btn btn-accent">Give now</button>
       </PageHero>
-
-      <section className="section section-tight">
-        <div className="container">
-          <div className="row gy-4">
-            {["Monthly Partner", "Sponsor a Student", "Community Grants"].map(
-              (item) => (
-                <div className="col-md-4" key={item}>
-                  <div className="support-card">
-                    <h4>{item}</h4>
-                    <p className="text-muted">
-                      Flexible ways to sustain long-term programs and stability.
-                    </p>
-                    <button className="btn btn-outline-light btn-sm">
-                      Learn more
-                    </button>
-                  </div>
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </section>
 
       <section className="section">
         <div className="container">
-          <div className="row gy-4 align-items-start">
+          <div className="row gy-4">
             <div className="col-lg-6">
-              <div className="section-title">Payment</div>
-              <h2 className="section-heading">Secure and flexible payment options</h2>
-              <p className="section-copy">
-                We partner with trusted payment providers to ensure your donations are processed securely and efficiently. Choose the method that works best for you, and rest assured that your support is making a difference in the lives of those we serve. 
-              </p>
-              <div className="program-card">
-                <h5 className="mb-3">Suggested integration</h5>
-                <p className="text-muted mb-2">donations</p>
-                <p className="text-muted mb-0">
-                  Payload: amount, currency, donor details, payment method, and
-                  payment token.
+              <div className="support-card h-100">
+                <h4 className="mb-3">PayPal Donation</h4>
+                <p className="text-muted mb-3">
+                  Use PayPal checkout with default PayPal styles.
                 </p>
+
+                {PAYPAL_CLIENT_ID === "test" ? (
+                  <a
+                    className="btn btn-outline-light w-100"
+                    href={PAYPAL_DONATION_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Donate with PayPal
+                  </a>
+                ) : (
+                  <div ref={paypalContainerRef} />
+                )}
+
+                {paypalMessage && <small className="text-muted d-block mt-2">{paypalMessage}</small>}
+
+                <a
+                  className="btn btn-outline-light w-100 mt-3"
+                  href={STRIPE_DONATION_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Donate with Card (Stripe)
+                </a>
               </div>
             </div>
-            <div className="col-lg-6">
-              <form className="support-card" onSubmit={handleSubmit}>
-                <h4 className="mb-3">Donation form</h4>
+
+            <div className="col-lg-6" id="mpesa-donation-form">
+              <form className="support-card h-100" onSubmit={handleSubmit}>
+                <h4 className="mb-3">M-Pesa Donation</h4>
+
                 <div className="row gy-3">
                   <div className="col-md-6">
                     <label className="form-label">First name</label>
@@ -303,8 +244,10 @@ function Donate() {
                       value={form.firstName}
                       onChange={handleChange}
                       placeholder="Jane"
+                      required
                     />
                   </div>
+
                   <div className="col-md-6">
                     <label className="form-label">Last name</label>
                     <input
@@ -313,164 +256,63 @@ function Donate() {
                       value={form.lastName}
                       onChange={handleChange}
                       placeholder="Doe"
+                      required
                     />
                   </div>
+
                   <div className="col-12">
                     <label className="form-label">Email</label>
                     <input
                       className="form-control"
+                      type="email"
                       name="email"
                       value={form.email}
                       onChange={handleChange}
                       placeholder="jane@email.com"
                     />
                   </div>
+
                   <div className="col-md-6">
-                    <label className="form-label">Amount</label>
+                    <label className="form-label">M-Pesa phone number</label>
                     <input
                       className="form-control"
+                      type="tel"
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      placeholder="2547XXXXXXXX"
+                      required
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Amount (KES)</label>
+                    <input
+                      className="form-control"
+                      type="number"
+                      min="1"
                       name="amount"
                       value={form.amount}
                       onChange={handleChange}
-                      placeholder="100"
+                      placeholder="1000"
+                      required
                     />
                   </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Currency</label>
-                    <select
-                      className="form-select"
-                      name="currency"
-                      value={form.currency}
-                      onChange={handleChange}
-                    >
-                      <option>USD</option>
-                      <option>KES</option>
-                      <option>EUR</option>
-                      <option>GBP</option>
-                    </select>
-                  </div>
-                  <div className="col-12">
-                    <label className="form-label">Payment method</label>
-                    <div className="d-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
-                      {[
-                        { id: "visa", label: "Visa" },
-                        { id: "paypal", label: "PayPal" },
-                        { id: "mpesa", label: "M-Pesa" },
-                        { id: "bank", label: "Bank" }
-                      ].map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => handleMethodSelect(item.id)}
-                          className={`btn btn-sm ${
-                            method === item.id ? "btn-accent" : "btn-outline-light"
-                          }`}
-                        >
-                          <img
-                            src={`/icons/${item.id}.svg`}
-                            alt={item.label}
-                            style={{ width: "32px", height: "22px", objectFit: "contain" }}
-                          />
-                          <span className="visually-hidden">{item.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="border rounded p-3">
-                      {method === "visa" && (
-                        <Elements stripe={stripePromise}>
-                          <VisaInput
-                            onToken={(token) =>
-                              setForm((prev) => ({ ...prev, paymentToken: token || "" }))
-                            }
-                            options={cardElementOptions}
-                          />
-                        </Elements>
-                      )}
-                      {method === "paypal" && (
-                        <div>
-                          <p className="text-muted mb-2">
-                            You will be redirected to PayPal to complete payment.
-                          </p>
-                          <button
-                            type="button"
-                            className="btn btn-outline-light w-100"
-                            onClick={() =>
-                              setForm((prev) => ({
-                                ...prev,
-                                paymentToken: "paypal_redirect_pending"
-                              }))
-                            }
-                          >
-                            Continue with PayPal
-                          </button>
-                        </div>
-                      )}
-                      {method === "mpesa" && (
-                        <div>
-                          <label className="form-label">M-Pesa Phone Number</label>
-                          <input
-                            className="form-control mb-2"
-                            type="tel"
-                            placeholder="2547XXXXXXXX"
-                            value={phone}
-                            onChange={(event) => {
-                              const nextPhone = event.target.value;
-                              setPhone(nextPhone);
-                              setForm((prev) => ({ ...prev, paymentToken: nextPhone }));
-                            }}
-                          />
-                          <button type="button" className="btn btn-success w-100">
-                            Pay with M-Pesa
-                          </button>
-                        </div>
-                      )}
-                      {method === "bank" && (
-                        <button
-                          type="button"
-                          className="btn btn-primary w-100"
-                          onClick={() =>
-                            setForm((prev) => ({ ...prev, paymentToken: "plaid_connect_pending" }))
-                          }
-                        >
-                          Connect bank account
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {/* <div className="col-12">
-                    <label className="form-label">Payment method token</label>
-                    <input
-                      className="form-control"
-                      name="paymentToken"
-                      value={form.paymentToken}
-                      onChange={handleChange}
-                      placeholder="Generated by gateway SDK"
-                    />
-                  </div> */}
+
                   <div className="col-12">
                     <button className="btn btn-accent w-100" type="submit" disabled={submitting}>
-                      {submitting ? "Submitting..." : "Submit donation"}
+                      {submitting ? "Submitting..." : "Pay with M-Pesa"}
                     </button>
+
                     {status.type === "success" && (
-                      <small className="text-success d-block mt-2">
-                        {status.message}
-                      </small>
+                      <small className="text-success d-block mt-2">{status.message}</small>
                     )}
                     {status.type === "error" && (
-                      <small className="text-danger d-block mt-2">
-                        {status.message}
-                      </small>
+                      <small className="text-danger d-block mt-2">{status.message}</small>
                     )}
                     {status.type === "pending" && (
-                      <small className="text-warning d-block mt-2">
-                        {status.message}
-                      </small>
+                      <small className="text-warning d-block mt-2">{status.message}</small>
                     )}
-                    <small className="text-muted d-block mt-2">
-                       Please process your payments securely.
-                    </small>
                   </div>
                 </div>
               </form>
@@ -483,39 +325,3 @@ function Donate() {
 }
 
 export default Donate;
-
-function VisaInput({ onToken, options }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [cardStatus, setCardStatus] = useState("");
-
-  const createToken = async () => {
-    if (!stripe || !elements) return;
-
-    const card = elements.getElement(CardElement);
-    if (!card) return;
-
-    const { token, error } = await stripe.createToken(card);
-    if (error) {
-      setCardStatus(error.message || "Unable to validate card");
-      onToken("");
-      return;
-    }
-
-    onToken(token?.id || "");
-    setCardStatus("Card validated. Token captured.");
-  };
-
-  return (
-    <div>
-      <label className="form-label">Card details</label>
-      <div className="form-control py-3">
-        <CardElement options={options} />
-      </div>
-      <button type="button" className="btn btn-outline-light btn-sm mt-2" onClick={createToken}>
-        Validate card
-      </button>
-      {cardStatus && <small className="d-block mt-2 text-muted">{cardStatus}</small>}
-    </div>
-  );
-}
