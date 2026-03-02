@@ -1,21 +1,12 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
-import { getApiUrl } from "../utils/api";
+import { postJson } from "../utils/api";
 
 const initialForm = {
   name: "",
   email: "",
   message: ""
-};
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(";").shift();
-  }
-  return "";
 };
 
 function Contact() {
@@ -34,16 +25,7 @@ function Contact() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const csrfToken = getCookie("csrftoken");
-      const response = await fetch(getApiUrl("/api/contact/"), {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {})
-        },
-        body: JSON.stringify(form)
-      });
+      const response = await postJson("/api/contact/", form);
 
       if (!response.ok) {
         throw new Error("Contact request failed.");
@@ -123,10 +105,6 @@ function Contact() {
                     {status.message}
                   </small>
                 )}
-                <small className="text-muted d-block mt-2">
-                  This form is ready for backend integration. Connect it to your
-                  messaging API to store or forward submissions.
-                </small>
               </form>
             </div>
             <div className="col-lg-6">

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
-import { getApiUrl } from "../utils/api";
+import { postJson } from "../utils/api";
 
 const initialForm = {
   name: "",
@@ -10,15 +10,6 @@ const initialForm = {
   role: "Learning Circle Facilitator",
   availability: "",
   message: ""
-};
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(";").shift();
-  }
-  return "";
 };
 
 function Volunteer() {
@@ -37,16 +28,7 @@ function Volunteer() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const csrfToken = getCookie("csrftoken");
-      const response = await fetch(getApiUrl("/api/volunteer/"), {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {})
-        },
-        body: JSON.stringify(form)
-      });
+      const response = await postJson("/api/volunteer/", form);
 
       if (!response.ok) {
         throw new Error("Volunteer request failed.");

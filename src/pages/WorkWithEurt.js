@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
-import { getApiUrl } from "../utils/api";
+import { postJson } from "../utils/api";
 
 const initialForm = {
   organization_name: "",
@@ -11,13 +11,6 @@ const initialForm = {
   preferred_time: "",
   topic: "",
   message: ""
-};
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return "";
 };
 
 function WorkWithEurt() {
@@ -36,16 +29,7 @@ function WorkWithEurt() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const csrfToken = getCookie("csrftoken");
-      const response = await fetch(getApiUrl("/api/partner-appointments/"), {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {})
-        },
-        body: JSON.stringify(form)
-      });
+      const response = await postJson("/api/partner-appointments/", form);
 
       if (!response.ok) {
         throw new Error("Booking request failed.");

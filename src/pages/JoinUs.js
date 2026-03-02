@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
-import { getApiUrl } from "../utils/api";
+import { postJson } from "../utils/api";
 
 const initialForm = {
   name: "",
@@ -10,15 +10,6 @@ const initialForm = {
   interest: "Community Fellow",
   startDate: "",
   message: ""
-};
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(";").shift();
-  }
-  return "";
 };
 
 function JoinUs() {
@@ -37,16 +28,7 @@ function JoinUs() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const csrfToken = getCookie("csrftoken");
-      const response = await fetch(getApiUrl("/api/join-us/"), {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(csrfToken ? { "X-CSRFToken": csrfToken } : {})
-        },
-        body: JSON.stringify(form)
-      });
+      const response = await postJson("/api/join-us/", form);
 
       if (!response.ok) {
         throw new Error("Join request failed.");
