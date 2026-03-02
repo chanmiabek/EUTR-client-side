@@ -13,10 +13,23 @@ const links = [
 ];
 
 function SiteNavbar() {
+  const closeMobileMenu = () => {
+    const menu = document.getElementById("navbarSupportedContent");
+    if (menu && menu.classList.contains("show")) {
+      menu.classList.remove("show");
+    }
+
+    const toggler = document.querySelector('[data-bs-target="#navbarSupportedContent"]');
+    if (toggler) {
+      toggler.setAttribute("aria-expanded", "false");
+      toggler.classList.add("collapsed");
+    }
+  };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light fixed-top navbar-eutr">
       <div className="container">
-        <Link className="navbar-brand d-flex align-items-center" to="/">
+        <Link className="navbar-brand d-flex align-items-center" to="/" onClick={closeMobileMenu}>
           <img src={logo} alt="EUTR logo" />
           <div>
             <div className="fw-bold">EUTR</div>
@@ -40,6 +53,7 @@ function SiteNavbar() {
               <li className="nav-item" key={link.to}>
                 <NavLink
                   to={link.to}
+                  onClick={closeMobileMenu}
                   className={({ isActive }) =>
                     isActive ? "nav-link active" : "nav-link"
                   }
@@ -51,7 +65,7 @@ function SiteNavbar() {
             ))}
           </ul>
           <div className="ms-lg-3">
-            <Link className="btn btn-accent" to="/donate">
+            <Link className="btn btn-accent" to="/donate" onClick={closeMobileMenu}>
               Support EUTR
             </Link>
           </div>

@@ -1,5 +1,12 @@
 const rawBaseUrl = process.env.REACT_APP_API_BASE_URL || "https://eutrbackendapi.onrender.com";
 
+const sanitizeBaseUrl = (value) =>
+  String(value || "")
+    .trim()
+    .replace(/^\{+|\}+$/g, "")
+    .replace(/^"+|"+$/g, "")
+    .replace(/^'+|'+$/g, "");
+
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -12,7 +19,7 @@ const getCookie = (name) => {
 export const getApiUrl = (path = "") => {
   if (/^https?:\/\//i.test(path)) return path;
 
-  const base = (rawBaseUrl || "").replace(/\/+$/, "");
+  const base = sanitizeBaseUrl(rawBaseUrl).replace(/\/+$/, "");
   const cleanPath = String(path).replace(/^\/+/, "");
 
   if (!base) return `/${cleanPath}`;
@@ -23,17 +30,34 @@ export const getApiUrl = (path = "") => {
 
 export const postJson = async (path, payload, options = {}) => {
   const csrfToken = getCookie("csrftoken");
-  const { headers = {}, ...restOptions } = options;
+  const { headers = {}, credentials = "omit", ...restOptions } = options;
 
   return fetch(getApiUrl(path), {
     method: "POST",
-    credentials: "include",
+    credentials,
     headers: {
       "Content-Type": "application/json",
-      ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+      ...(credentials === "include" && csrfToken ? { "X-CSRFToken": csrfToken } : {}),
       ...headers
     },
     body: JSON.stringify(payload),
     ...restOptions
   });
+};
+
+export const readApiError = async (response) => {
+  try {
+    const data = await response.json();
+    if (typeof data?.detail === "string" && data.detail.trim()) return data.detail;
+
+    const flattened = Object.values(data || {})
+      .flat()
+      .filter(Boolean)
+      .join(" ");
+    if (flattened.trim()) return flattened;
+  } catch {
+    // Ignore JSON parsing errors and fallback to generic status text.
+  }
+
+  return `Request failed (${response.status})`;
 };

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
-import { postJson } from "../utils/api";
+import { getApiUrl, postJson, readApiError } from "../utils/api";
 
 const initialForm = {
   name: "",
@@ -25,16 +25,28 @@ function Contact() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const response = await postJson("/api/contact/", form);
+      const payload = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: form.message.trim()
+      };
+
+      const response = await postJson("/api/contact/", payload);
 
       if (!response.ok) {
-        throw new Error("Contact request failed.");
+        const message = await readApiError(response);
+        throw new Error(message);
       }
 
       setStatus({ type: "success", message: "Message sent successfully." });
       setForm(initialForm);
     } catch (error) {
-      setStatus({ type: "error", message: "Unable to send message." });
+      const isNetworkError = error?.name === "TypeError" && /fetch/i.test(error?.message || "");
+      const networkMessage = `Network/CORS error: could not reach ${getApiUrl("/api/contact/")}.`;
+      setStatus({
+        type: "error",
+        message: isNetworkError ? networkMessage : error.message || "Unable to send message."
+      });
     } finally {
       setSubmitting(false);
     }
@@ -50,7 +62,7 @@ function Contact() {
         backgroundAlt="Contact hero"
       >
         <h5 className="mb-3">Reach us</h5>
-        <p className="text-muted mb-1">Email: hello@eutr.org</p>
+        <p className="text-muted mb-1">Email: @eutr.org</p>
         <p className="text-muted mb-1">Phone: +254 700 000 000</p>
         <p className="text-muted">Location: Kakuma, Kenya</p>
       </PageHero>
@@ -69,16 +81,19 @@ function Contact() {
                     value={form.name}
                     onChange={handleChange}
                     placeholder="Your name"
+                    required
                   />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Email</label>
                   <input
                     className="form-control"
+                    type="email"
                     name="email"
                     value={form.email}
                     onChange={handleChange}
                     placeholder="Email address"
+                    required
                   />
                 </div>
                 <div className="mb-3">
@@ -90,6 +105,7 @@ function Contact() {
                     onChange={handleChange}
                     rows="4"
                     placeholder="How can we help?"
+                    required
                   ></textarea>
                 </div>
                 <button className="btn btn-accent" type="submit" disabled={submitting}>

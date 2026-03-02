@@ -14,7 +14,6 @@ function ApiHealthBanner() {
     try {
       const response = await fetch(getApiUrl("/api/payment-section/"), {
         method: "GET",
-        credentials: "include",
       });
 
       if (!response.ok) {
@@ -26,7 +25,7 @@ function ApiHealthBanner() {
       setMessage(`Backend connected (${latency}ms)`);
     } catch (error) {
       setState("disconnected");
-      setMessage("Backend unavailable. Check Django server on 127.0.0.1:8000.");
+      setMessage("Backend unavailable. Check https://eutrbackendapi.onrender.com.");
     }
   }, []);
 

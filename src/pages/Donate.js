@@ -1,12 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
-import { getApiUrl } from "../utils/api";
+import { postJson, readApiError } from "../utils/api";
 
 const STRIPE_DONATION_LINK =
   process.env.REACT_APP_STRIPE_DONATION_LINK || "https://donate.stripe.com/test_5kQ28rcEJfcAeaPdKPaVa01";
-const PAYPAL_CLIENT_ID = process.env.REACT_APP_PAYPAL_CLIENT_ID || "test";
-const PAYPAL_CURRENCY = process.env.REACT_APP_PAYPAL_CURRENCY || "USD";
 const PAYPAL_DONATION_LINK = process.env.REACT_APP_PAYPAL_DONATION_LINK || "https://www.paypal.com/donate";
 
 const initialForm = {
@@ -22,8 +20,8 @@ function Donate() {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState({ type: "idle", message: "" });
+  const [paypalSubmitting, setPaypalSubmitting] = useState(false);
   const [paypalMessage, setPaypalMessage] = useState("");
-  const paypalContainerRef = useRef(null);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -51,17 +49,10 @@ function Donate() {
         phone: form.phone
       };
 
-      const response = await fetch(getApiUrl("/api/donations/initiate-payment/"), {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+      const response = await postJson("/api/donations/initiate-payment/", payload);
 
       if (!response.ok) {
-        throw new Error("Donation request failed.");
+        throw new Error(await readApiError(response));
       }
 
       const data = await response.json();
@@ -89,94 +80,44 @@ function Donate() {
     }
   };
 
-  useEffect(() => {
-    if (PAYPAL_CLIENT_ID === "test" || !paypalContainerRef.current) return undefined;
-
-    let active = true;
-    const scriptId = "paypal-sdk-script";
-    let script = document.getElementById(scriptId);
-
-    const renderButtons = () => {
-      if (!active || !window.paypal || !paypalContainerRef.current) return;
-      paypalContainerRef.current.innerHTML = "";
-
-      window.paypal
-        .Buttons({
-          createOrder: async () => {
-            try {
-              const response = await fetch(getApiUrl("/api/orders"), {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  cart: [{ id: "DONATION", quantity: "1" }]
-                })
-              });
-
-              const orderData = await response.json();
-              if (orderData.id) return orderData.id;
-
-              const errorDetail = orderData?.details?.[0];
-              const errorMessage = errorDetail
-                ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
-                : JSON.stringify(orderData);
-              throw new Error(errorMessage);
-            } catch (error) {
-              setPaypalMessage(`Could not initiate PayPal Checkout: ${error}`);
-              return "";
-            }
-          },
-          onApprove: async (data, actions) => {
-            try {
-              const response = await fetch(getApiUrl(`/api/orders/${data.orderID}/capture`), {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                }
-              });
-
-              const orderData = await response.json();
-              const errorDetail = orderData?.details?.[0];
-
-              if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
-                return actions.restart();
-              }
-
-              if (errorDetail) {
-                throw new Error(`${errorDetail.description} (${orderData.debug_id})`);
-              }
-
-              setPaypalMessage("PayPal payment completed successfully.");
-            } catch (error) {
-              setPaypalMessage(`Sorry, your transaction could not be processed: ${error}`);
-            }
-            return null;
-          },
-          onCancel: () => setPaypalMessage("PayPal payment was cancelled."),
-          onError: () => setPaypalMessage("PayPal payment failed. Please try again.")
-        })
-        .render(paypalContainerRef.current);
-    };
-
-    if (script) {
-      if (window.paypal) renderButtons();
-      else script.addEventListener("load", renderButtons, { once: true });
-    } else {
-      script = document.createElement("script");
-      script.id = scriptId;
-      script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(
-        PAYPAL_CLIENT_ID
-      )}&currency=${encodeURIComponent(PAYPAL_CURRENCY)}`;
-      script.async = true;
-      script.addEventListener("load", renderButtons, { once: true });
-      document.body.appendChild(script);
+  const handlePaypalCheckout = async () => {
+    const amount = Number(form.amount || 0);
+    if (amount <= 0) {
+      setPaypalMessage("Enter a valid amount before starting PayPal checkout.");
+      return;
     }
 
-    return () => {
-      active = false;
-    };
-  }, []);
+    setPaypalSubmitting(true);
+    setPaypalMessage("");
+
+    try {
+      const payload = {
+        ...form,
+        amount,
+        paymentMethod: "paypal",
+        payment_method: "paypal",
+        paymentToken: "paypal-web"
+      };
+
+      const response = await postJson("/api/donations/initiate-payment/", payload);
+      if (!response.ok) {
+        throw new Error(await readApiError(response));
+      }
+
+      const data = await response.json();
+      if (data?.approval_url) {
+        window.open(data.approval_url, "_blank", "noopener,noreferrer");
+        setPaypalMessage("PayPal checkout opened in a new tab.");
+      } else {
+        window.open(PAYPAL_DONATION_LINK, "_blank", "noopener,noreferrer");
+        setPaypalMessage("PayPal started. If no tab opened, use the fallback donation link.");
+      }
+    } catch (error) {
+      setPaypalMessage(error.message || "Could not initiate PayPal checkout.");
+    } finally {
+      setPaypalSubmitting(false);
+    }
+  };
 
   return (
     <div className="app">
@@ -202,21 +143,17 @@ function Donate() {
               <div className="support-card h-100">
                 <h4 className="mb-3">PayPal Donation</h4>
                 <p className="text-muted mb-3">
-                  Use PayPal checkout with default PayPal styles.
+                  Start PayPal through your backend payment endpoint.
                 </p>
 
-                {PAYPAL_CLIENT_ID === "test" ? (
-                  <a
-                    className="btn btn-outline-light w-100"
-                    href={PAYPAL_DONATION_LINK}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Donate with PayPal
-                  </a>
-                ) : (
-                  <div ref={paypalContainerRef} />
-                )}
+                <button
+                  className="btn btn-outline-light w-100"
+                  type="button"
+                  onClick={handlePaypalCheckout}
+                  disabled={paypalSubmitting}
+                >
+                  {paypalSubmitting ? "Starting PayPal..." : "Donate with PayPal"}
+                </button>
 
                 {paypalMessage && <small className="text-muted d-block mt-2">{paypalMessage}</small>}
 
