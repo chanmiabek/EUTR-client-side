@@ -1,5 +1,7 @@
 import React from "react";
 import logo from "../assets/logo.jpeg";
+import { Link } from "react-router-dom";
+
 const currentYear = new Date().getFullYear();
 
 function SiteFooter() {
@@ -27,19 +29,19 @@ function SiteFooter() {
           <div className="col-6 col-lg-2">
             <h6 className="text-uppercase text-muted">Explore</h6>
             <ul className="list-unstyled">
-              <li className="mb-2"><a className="footer-link" href="/about">About</a></li>
-              <li className="mb-2"><a className="footer-link" href="/program">Programs</a></li>
-              <li className="mb-2"><a className="footer-link" href="/impact">Impact</a></li>
-              <li className="mb-2"><a className="footer-link" href="/stories">Stories</a></li>
+              <li className="mb-2"><Link className="footer-link" to="/about">About</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="/program">Programs</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="/projects">Impact</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="/about">Stories</Link  ></li>
             </ul>
           </div>
           <div className="col-6 col-lg-2">
             <h6 className="text-uppercase text-muted">Get Involved</h6>
             <ul className="list-unstyled">
-              <li className="mb-2">Volunteer</li>
-              <li className="mb-2">Work with EUTR</li>
-              <li className="mb-2">Join Us</li>
-              <li className="mb-2">Donate</li>
+              <li className="mb-2"><Link className="footer-link" to="/volunteer">Volunteer</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="/join-us">Work with EUTR</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="/events">Events</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="/donate">Donate</Link></li>
             </ul>
           </div>
           <div className="col-6 col-lg-2">

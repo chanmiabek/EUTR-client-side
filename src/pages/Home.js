@@ -5,6 +5,7 @@ import gallery1 from "../assets/gallery-1.jpeg";
 import gallery2 from "../assets/gallery-2.jpeg";
 import gallery3 from "../assets/gallery-3.jpeg";
 import EventOverviewVideoSection from "../components/EventOverviewVideoSection";
+import { Link } from "react-router-dom";
 
 const fallbackPrograms = [
   {
@@ -173,8 +174,12 @@ function Home() {
                 knowledge, skills, and confidence children need to thrive.
               </p>
               <div className="d-flex flex-wrap gap-3 mt-4">
-                <button className="btn btn-accent">Donate Now</button>
-                <button className="btn btn-outline-light">Join the Movement</button>
+                <Link to="/donate" className="btn btn-accent">
+                  Donate Now
+                </Link>
+                <Link to="/volunteer" className="btn btn-accent">
+                  Join the Movement
+                </Link>
               </div>
             </div>
             <div className="col-lg-5 section-reveal delay-1">
@@ -437,7 +442,6 @@ function Home() {
                   can be updated from the backend.
                 </p>
               </div>
-              <button className="btn btn-accent btn-sm">View calendar</button>
             </div>
             {eventsLoading && (
               <p className="text-muted">Loading events...</p>
@@ -473,7 +477,9 @@ function Home() {
                 Every contribution supports families, empowers youth, and keeps
                 learning hubs running.
               </p>
-              <button className="btn btn-accent">Give today</button>
+              <Link to="/donate" className="btn btn-accent">
+                Give today
+              </Link>
             </div>
             <div className="col-lg-6 section-reveal delay-1">
               <div className="glow-card">
