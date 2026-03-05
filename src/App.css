@@ -31,6 +31,12 @@ main {
 .nav-link.active,
 .nav-link:hover {
   color: var(--accent) !important;
+
+}
+
+.nav-link:hover {
+  color: var(--accent) !important;
+  border-bottom: 2px solid var(--accent);
 }
 
 .hero {
@@ -442,7 +448,8 @@ main {
 @media (max-width: 768px) {
   .hero {
     padding-top: 6rem;
-  }`r`n
+  }
+
   .image-stack img:nth-child(2) {
     margin-left: 0;
   }
