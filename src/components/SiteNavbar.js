@@ -30,9 +30,9 @@ function SiteNavbar() {
     <nav className="navbar navbar-expand-lg navbar-light fixed-top navbar-eutr">
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center" to="/" onClick={closeMobileMenu}>
-          <img src={logo} alt="EUTR logo" />
+          <img src={logo} alt="EUR logo" />
           <div>
-            <div className="fw-bold">EUTR</div>
+            <div className="fw-bold">EUR</div>
             <small className="text-muted">Education | Unity</small>
           </div>
         </Link>

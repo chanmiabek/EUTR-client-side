@@ -3,6 +3,7 @@ import React from "react";
 function PageHero({ eyebrow, title, copy, children, backgroundImage, backgroundAlt = "Page hero" }) {
   if (backgroundImage) {
     return (
+      
       <section className="hero page-image-hero">
         <img className="hero-bg" src={backgroundImage} alt={backgroundAlt} />
         <div className="container hero-content">

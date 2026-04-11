@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
-import { getApiUrl, postJson, readApiError } from "../utils/api";
+import {  postJson, readApiError } from "../utils/api";
 
 const initialForm = {
   name: "",
@@ -42,7 +42,7 @@ function Contact() {
       setForm(initialForm);
     } catch (error) {
       const isNetworkError = error?.name === "TypeError" && /fetch/i.test(error?.message || "");
-      const networkMessage = `Network/CORS error: could not reach ${getApiUrl("/api/contact/")}.`;
+      const networkMessage = 'Network error! Message could not send,  Please check your connection and try again.';
       setStatus({
         type: "error",
         message: isNetworkError ? networkMessage : error.message || "Unable to send message."
@@ -62,8 +62,8 @@ function Contact() {
         backgroundAlt="Contact hero"
       >
         <h5 className="mb-3">Reach us</h5>
-        <p className="text-muted mb-1">Email: @eutr.org</p>
-        <p className="text-muted mb-1">Phone: +254 700 000 000</p>
+        <p className="text-muted mb-1">Email: educateustorise@gmail.com</p>
+        <p className="text-muted mb-1">Phone: +254 705228732</p>
         <p className="text-muted">Location: Kakuma, Kenya</p>
       </PageHero>
 

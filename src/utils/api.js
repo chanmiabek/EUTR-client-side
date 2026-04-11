@@ -1,4 +1,4 @@
-const rawBaseUrl = process.env.REACT_APP_API_BASE_URL || "https://eutrbackendapi.onrender.com";
+const rawBaseUrl = process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:5000";
 
 const sanitizeBaseUrl = (value) =>
   String(value || "")
@@ -41,6 +41,32 @@ export const postJson = async (path, payload, options = {}) => {
       ...headers
     },
     body: JSON.stringify(payload),
+    ...restOptions
+  });
+};
+
+export const putJson = async (path, payload, options = {}) => {
+  const { headers = {}, ...restOptions } = options;
+
+  return fetch(getApiUrl(path), {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers
+    },
+    body: JSON.stringify(payload),
+    ...restOptions
+  });
+};
+
+export const deleteJson = async (path, options = {}) => {
+  const { headers = {}, ...restOptions } = options;
+
+  return fetch(getApiUrl(path), {
+    method: "DELETE",
+    headers: {
+      ...headers
+    },
     ...restOptions
   });
 };
