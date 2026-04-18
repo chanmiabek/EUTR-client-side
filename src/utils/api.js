@@ -21,11 +21,15 @@ export const getApiUrl = (path = "") => {
 
   const base = sanitizeBaseUrl(rawBaseUrl).replace(/\/+$/, "");
   const cleanPath = String(path).replace(/^\/+/, "");
+  const normalizedPath =
+    base.endsWith("/api") && cleanPath.toLowerCase().startsWith("api/")
+      ? cleanPath.slice(4)
+      : cleanPath;
 
-  if (!base) return `/${cleanPath}`;
+  if (!base) return `/${normalizedPath}`;
   if (!cleanPath) return base;
 
-  return `${base}/${cleanPath}`;
+  return `${base}/${normalizedPath}`;
 };
 
 export const postJson = async (path, payload, options = {}) => {
@@ -58,6 +62,28 @@ export const putJson = async (path, payload, options = {}) => {
     ...restOptions
   });
 };
+
+const submitFormData = async (method, path, payload, options = {}) => {
+  const csrfToken = getCookie("csrftoken");
+  const { headers = {}, credentials = "omit", ...restOptions } = options;
+
+  return fetch(getApiUrl(path), {
+    method,
+    credentials,
+    headers: {
+      ...(credentials === "include" && csrfToken ? { "X-CSRFToken": csrfToken } : {}),
+      ...headers
+    },
+    body: payload,
+    ...restOptions
+  });
+};
+
+export const postFormData = async (path, payload, options = {}) =>
+  submitFormData("POST", path, payload, options);
+
+export const putFormData = async (path, payload, options = {}) =>
+  submitFormData("PUT", path, payload, options);
 
 export const deleteJson = async (path, options = {}) => {
   const { headers = {}, ...restOptions } = options;

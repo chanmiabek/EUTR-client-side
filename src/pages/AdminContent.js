@@ -1,12 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
-import { deleteJson, getApiUrl, postJson, putJson, readApiError } from "../utils/api";
+import {
+  deleteJson,
+  getApiUrl,
+  postFormData,
+  putFormData,
+  readApiError
+} from "../utils/api";
 import { readStoredSession, writeStoredSession } from "../utils/adminSession";
 
-const initialTeamForm = { name: "", role: "", copy: "", image: "" };
-const initialTestimonialForm = { name: "", role: "", quote: "", image: "" };
-const initialVideoForm = { title: "", youtube_url: "" };
+const initialTeamForm = { name: "", role: "", copy: "", image: "", imageFile: null };
+const initialTestimonialForm = { name: "", role: "", quote: "", image: "", imageFile: null };
+const initialVideoForm = { title: "", youtube_url: "", video_url: "", videoFile: null };
 const initialProgramForm = {
   title: "",
   focus: "",
@@ -14,6 +21,7 @@ const initialProgramForm = {
   beneficiaries: "",
   description: "",
   image: "",
+  imageFile: null,
   highlights: ""
 };
 const initialEventForm = {
@@ -23,9 +31,72 @@ const initialEventForm = {
   tag: "",
   description: "",
   image: "",
+  imageFile: null,
   highlights: ""
 };
-const initialPartnerForm = { name: "", link: "", logo_url: "" };
+const initialPartnerForm = { name: "", link: "", logo_url: "", logoFile: null };
+
+const resolveImageAsset = (item) => item?.image || item?.photo || item?.avatar || "";
+const resolvePartnerAsset = (item) => item?.logo_url || item?.logo || item?.image || "";
+const resolveVideoAsset = (item) => item?.video_url || item?.video || item?.file || item?.media || "";
+
+const buildFormData = (values, fileField) => {
+  const formData = new FormData();
+
+  Object.entries(values).forEach(([key, value]) => {
+    if (key.endsWith("File")) return;
+    if (value === undefined || value === null || value === "") return;
+    formData.append(key, value);
+  });
+
+  if (fileField) {
+    const file = values[`${fileField}File`];
+    if (file instanceof File) {
+      formData.append(fileField, file);
+    }
+  }
+
+  return formData;
+};
+
+function AssetField({
+  label,
+  accept,
+  fileName,
+  currentAsset,
+  assetType = "image",
+  urlLabel,
+  urlValue,
+  onUrlChange,
+  onFileChange,
+  placeholder
+}) {
+  return (
+    <div className="mb-3">
+      <label className="form-label">{label}</label>
+      <input className="form-control" type="file" accept={accept} onChange={onFileChange} />
+      <small className="text-muted d-block mt-2">
+        {fileName ? `Selected file: ${fileName}` : "No file selected yet."}
+      </small>
+      {currentAsset && (
+        <div className="admin-asset-preview mt-3">
+          {assetType === "video" ? (
+            <video className="admin-asset-preview-media" src={currentAsset} controls preload="metadata" />
+          ) : (
+            <img className="admin-asset-preview-media" src={currentAsset} alt={label} />
+          )}
+        </div>
+      )}
+      <label className="form-label mt-3">{urlLabel}</label>
+      <input
+        className="form-control"
+        value={urlValue}
+        onChange={onUrlChange}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+}
 
 function AdminContent() {
   const [session, setSession] = useState(() => (typeof window !== "undefined" ? readStoredSession() : null));
@@ -78,7 +149,9 @@ function AdminContent() {
       setTestimonials(Array.isArray(testimonialData) ? testimonialData : testimonialData?.results || []);
       setVideo({
         title: videoData?.title || "",
-        youtube_url: videoData?.youtube_url || ""
+        youtube_url: videoData?.youtube_url || "",
+        video_url: resolveVideoAsset(videoData),
+        videoFile: null
       });
     } catch {
       setMessage("error", "Unable to load admin content.");
@@ -128,10 +201,11 @@ function AdminContent() {
 
   const handleProgramSubmit = async (event) => {
     event.preventDefault();
+    const payload = buildFormData(programForm, "image");
     await saveRequest(
       programEditingId
-        ? putJson(`/api/programs/${programEditingId}`, programForm, { headers: adminHeaders })
-        : postJson("/api/programs", programForm, { headers: adminHeaders }),
+        ? putFormData(`/api/programs/${programEditingId}`, payload, { headers: adminHeaders })
+        : postFormData("/api/programs", payload, { headers: adminHeaders }),
       programEditingId ? "Program updated." : "Program added.",
       () => {
         setProgramEditingId("");
@@ -142,10 +216,11 @@ function AdminContent() {
 
   const handleEventSubmit = async (event) => {
     event.preventDefault();
+    const payload = buildFormData(eventForm, "image");
     await saveRequest(
       eventEditingId
-        ? putJson(`/api/events/${eventEditingId}`, eventForm, { headers: adminHeaders })
-        : postJson("/api/events", eventForm, { headers: adminHeaders }),
+        ? putFormData(`/api/events/${eventEditingId}`, payload, { headers: adminHeaders })
+        : postFormData("/api/events", payload, { headers: adminHeaders }),
       eventEditingId ? "Event updated." : "Event added.",
       () => {
         setEventEditingId("");
@@ -156,10 +231,11 @@ function AdminContent() {
 
   const handlePartnerSubmit = async (event) => {
     event.preventDefault();
+    const payload = buildFormData(partnerForm, "logo");
     await saveRequest(
       partnerEditingId
-        ? putJson(`/api/admin/partners/${partnerEditingId}`, partnerForm, { headers: adminHeaders })
-        : postJson("/api/admin/partners", partnerForm, { headers: adminHeaders }),
+        ? putFormData(`/api/admin/partners/${partnerEditingId}`, payload, { headers: adminHeaders })
+        : postFormData("/api/admin/partners", payload, { headers: adminHeaders }),
       partnerEditingId ? "Partner updated." : "Partner added.",
       () => {
         setPartnerEditingId("");
@@ -170,10 +246,11 @@ function AdminContent() {
 
   const handleTeamSubmit = async (event) => {
     event.preventDefault();
+    const payload = buildFormData(teamForm, "image");
     await saveRequest(
       teamEditingId
-        ? putJson(`/api/admin/team/${teamEditingId}`, teamForm, { headers: adminHeaders })
-        : postJson("/api/admin/team", teamForm, { headers: adminHeaders }),
+        ? putFormData(`/api/admin/team/${teamEditingId}`, payload, { headers: adminHeaders })
+        : postFormData("/api/admin/team", payload, { headers: adminHeaders }),
       teamEditingId ? "Team member updated." : "Team member added.",
       () => {
         setTeamEditingId("");
@@ -184,10 +261,11 @@ function AdminContent() {
 
   const handleTestimonialSubmit = async (event) => {
     event.preventDefault();
+    const payload = buildFormData(testimonialForm, "image");
     await saveRequest(
       testimonialEditingId
-        ? putJson(`/api/admin/testimonials/${testimonialEditingId}`, testimonialForm, { headers: adminHeaders })
-        : postJson("/api/admin/testimonials", testimonialForm, { headers: adminHeaders }),
+        ? putFormData(`/api/admin/testimonials/${testimonialEditingId}`, payload, { headers: adminHeaders })
+        : postFormData("/api/admin/testimonials", payload, { headers: adminHeaders }),
       testimonialEditingId ? "Testimonial updated." : "Testimonial added.",
       () => {
         setTestimonialEditingId("");
@@ -198,8 +276,9 @@ function AdminContent() {
 
   const handleVideoSubmit = async (event) => {
     event.preventDefault();
+    const payload = buildFormData(video, "video");
     await saveRequest(
-      putJson("/api/admin/event-overview-video", video, { headers: adminHeaders }),
+      putFormData("/api/admin/event-overview-video", payload, { headers: adminHeaders }),
       "Event overview video updated."
     );
   };
@@ -207,6 +286,10 @@ function AdminContent() {
   const handleDelete = async (path, successMessage) => {
     await saveRequest(deleteJson(path, { headers: adminHeaders }), successMessage);
   };
+
+  if (!session?.token) {
+    return <Navigate to="/admin/login" replace />;
+  }
 
   return (
     <div>
@@ -257,7 +340,17 @@ function AdminContent() {
                   <div className="mb-3"><label className="form-label">Status</label><input className="form-control" value={programForm.status} onChange={(event) => setProgramForm((prev) => ({ ...prev, status: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Beneficiaries</label><input className="form-control" value={programForm.beneficiaries} onChange={(event) => setProgramForm((prev) => ({ ...prev, beneficiaries: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Description</label><textarea className="form-control" rows="4" value={programForm.description} onChange={(event) => setProgramForm((prev) => ({ ...prev, description: event.target.value }))} /></div>
-                  <div className="mb-3"><label className="form-label">Image URL</label><input className="form-control" value={programForm.image} onChange={(event) => setProgramForm((prev) => ({ ...prev, image: event.target.value }))} /></div>
+                  <AssetField
+                    label="Program image"
+                    accept="image/*"
+                    fileName={programForm.imageFile?.name}
+                    currentAsset={programForm.image}
+                    urlLabel="Image URL fallback"
+                    urlValue={programForm.image}
+                    onUrlChange={(event) => setProgramForm((prev) => ({ ...prev, image: event.target.value }))}
+                    onFileChange={(event) => setProgramForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    placeholder="https://example.com/program.jpg"
+                  />
                   <div className="mb-3"><label className="form-label">Highlights</label><textarea className="form-control" rows="4" value={programForm.highlights} onChange={(event) => setProgramForm((prev) => ({ ...prev, highlights: event.target.value }))} placeholder="One per line" /></div>
                   <div className="d-flex gap-2 flex-wrap">
                     <button className="btn btn-accent" type="submit">{programEditingId ? "Update program" : "Add program"}</button>
@@ -275,10 +368,11 @@ function AdminContent() {
                       <div>
                         <strong>{item.title}</strong>
                         <div className="text-muted">{item.focus}</div>
-                        <small className="text-muted">{item.description || item.copy}</small>
+                        <small className="text-muted d-block mb-2">{item.description || item.copy}</small>
+                        <small className="text-muted">{resolveImageAsset(item) ? "Image attached" : "No image yet"}</small>
                       </div>
                       <div className="d-flex gap-2">
-                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setProgramEditingId(item.id); setProgramForm({ title: item.title || "", focus: item.focus || "", status: item.status || "", beneficiaries: item.beneficiaries || "", description: item.description || item.copy || "", image: item.image || "", highlights: toLines(item.highlights) }); }}>Edit</button>
+                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setProgramEditingId(item.id); setProgramForm({ title: item.title || "", focus: item.focus || "", status: item.status || "", beneficiaries: item.beneficiaries || "", description: item.description || item.copy || "", image: resolveImageAsset(item), imageFile: null, highlights: toLines(item.highlights) }); }}>Edit</button>
                         <button className="btn btn-outline-light btn-sm" type="button" onClick={() => handleDelete(`/api/programs/${item.id}`, "Program deleted.")}>Delete</button>
                       </div>
                     </div>
@@ -296,7 +390,17 @@ function AdminContent() {
                   <div className="mb-3"><label className="form-label">Location</label><input className="form-control" value={eventForm.location} onChange={(event) => setEventForm((prev) => ({ ...prev, location: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Tag</label><input className="form-control" value={eventForm.tag} onChange={(event) => setEventForm((prev) => ({ ...prev, tag: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Description</label><textarea className="form-control" rows="4" value={eventForm.description} onChange={(event) => setEventForm((prev) => ({ ...prev, description: event.target.value }))} /></div>
-                  <div className="mb-3"><label className="form-label">Image URL</label><input className="form-control" value={eventForm.image} onChange={(event) => setEventForm((prev) => ({ ...prev, image: event.target.value }))} /></div>
+                  <AssetField
+                    label="Event image"
+                    accept="image/*"
+                    fileName={eventForm.imageFile?.name}
+                    currentAsset={eventForm.image}
+                    urlLabel="Image URL fallback"
+                    urlValue={eventForm.image}
+                    onUrlChange={(event) => setEventForm((prev) => ({ ...prev, image: event.target.value }))}
+                    onFileChange={(event) => setEventForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    placeholder="https://example.com/event.jpg"
+                  />
                   <div className="mb-3"><label className="form-label">Highlights</label><textarea className="form-control" rows="4" value={eventForm.highlights} onChange={(event) => setEventForm((prev) => ({ ...prev, highlights: event.target.value }))} placeholder="One per line" /></div>
                   <div className="d-flex gap-2 flex-wrap">
                     <button className="btn btn-accent" type="submit">{eventEditingId ? "Update event" : "Add event"}</button>
@@ -314,10 +418,11 @@ function AdminContent() {
                       <div>
                         <strong>{item.title}</strong>
                         <div className="text-muted">{item.date} | {item.location}</div>
-                        <small className="text-muted">{item.description}</small>
+                        <small className="text-muted d-block mb-2">{item.description}</small>
+                        <small className="text-muted">{resolveImageAsset(item) ? "Image attached" : "No image yet"}</small>
                       </div>
                       <div className="d-flex gap-2">
-                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setEventEditingId(item.id); setEventForm({ title: item.title || "", date: item.date || "", location: item.location || "", tag: item.tag || "", description: item.description || "", image: item.image || "", highlights: toLines(item.highlights) }); }}>Edit</button>
+                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setEventEditingId(item.id); setEventForm({ title: item.title || "", date: item.date || "", location: item.location || "", tag: item.tag || "", description: item.description || "", image: resolveImageAsset(item), imageFile: null, highlights: toLines(item.highlights) }); }}>Edit</button>
                         <button className="btn btn-outline-light btn-sm" type="button" onClick={() => handleDelete(`/api/events/${item.id}`, "Event deleted.")}>Delete</button>
                       </div>
                     </div>
@@ -332,7 +437,17 @@ function AdminContent() {
                 <form onSubmit={handlePartnerSubmit}>
                   <div className="mb-3"><label className="form-label">Name</label><input className="form-control" value={partnerForm.name} onChange={(event) => setPartnerForm((prev) => ({ ...prev, name: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Link</label><input className="form-control" value={partnerForm.link} onChange={(event) => setPartnerForm((prev) => ({ ...prev, link: event.target.value }))} /></div>
-                  <div className="mb-3"><label className="form-label">Logo URL</label><input className="form-control" value={partnerForm.logo_url} onChange={(event) => setPartnerForm((prev) => ({ ...prev, logo_url: event.target.value }))} /></div>
+                  <AssetField
+                    label="Partner logo"
+                    accept="image/*"
+                    fileName={partnerForm.logoFile?.name}
+                    currentAsset={partnerForm.logo_url}
+                    urlLabel="Logo URL fallback"
+                    urlValue={partnerForm.logo_url}
+                    onUrlChange={(event) => setPartnerForm((prev) => ({ ...prev, logo_url: event.target.value }))}
+                    onFileChange={(event) => setPartnerForm((prev) => ({ ...prev, logoFile: event.target.files?.[0] || null }))}
+                    placeholder="https://example.com/logo.png"
+                  />
                   <div className="d-flex gap-2 flex-wrap">
                     <button className="btn btn-accent" type="submit">{partnerEditingId ? "Update partner" : "Add partner"}</button>
                     {partnerEditingId && <button className="btn btn-outline-light" type="button" onClick={() => { setPartnerEditingId(""); setPartnerForm(initialPartnerForm); }}>Cancel</button>}
@@ -349,10 +464,10 @@ function AdminContent() {
                       <div>
                         <strong>{item.name}</strong>
                         <div className="text-muted">{item.link || "No link"}</div>
-                        <small className="text-muted">{item.logo_url || "No logo URL"}</small>
+                        <small className="text-muted">{resolvePartnerAsset(item) ? "Logo attached" : "No logo yet"}</small>
                       </div>
                       <div className="d-flex gap-2">
-                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setPartnerEditingId(item.id); setPartnerForm({ name: item.name || "", link: item.link || "", logo_url: item.logo_url || "" }); }}>Edit</button>
+                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setPartnerEditingId(item.id); setPartnerForm({ name: item.name || "", link: item.link || "", logo_url: resolvePartnerAsset(item), logoFile: null }); }}>Edit</button>
                         <button className="btn btn-outline-light btn-sm" type="button" onClick={() => handleDelete(`/api/admin/partners/${item.id}`, "Partner deleted.")}>Delete</button>
                       </div>
                     </div>
@@ -368,7 +483,17 @@ function AdminContent() {
                   <div className="mb-3"><label className="form-label">Name</label><input className="form-control" value={teamForm.name} onChange={(event) => setTeamForm((prev) => ({ ...prev, name: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Role</label><input className="form-control" value={teamForm.role} onChange={(event) => setTeamForm((prev) => ({ ...prev, role: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Bio</label><textarea className="form-control" rows="4" value={teamForm.copy} onChange={(event) => setTeamForm((prev) => ({ ...prev, copy: event.target.value }))} /></div>
-                  <div className="mb-3"><label className="form-label">Image URL</label><input className="form-control" value={teamForm.image} onChange={(event) => setTeamForm((prev) => ({ ...prev, image: event.target.value }))} /></div>
+                  <AssetField
+                    label="Team profile image"
+                    accept="image/*"
+                    fileName={teamForm.imageFile?.name}
+                    currentAsset={teamForm.image}
+                    urlLabel="Image URL fallback"
+                    urlValue={teamForm.image}
+                    onUrlChange={(event) => setTeamForm((prev) => ({ ...prev, image: event.target.value }))}
+                    onFileChange={(event) => setTeamForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    placeholder="https://example.com/profile.jpg"
+                  />
                   <div className="d-flex gap-2 flex-wrap">
                     <button className="btn btn-accent" type="submit">{teamEditingId ? "Update team member" : "Add team member"}</button>
                     {teamEditingId && <button className="btn btn-outline-light" type="button" onClick={() => { setTeamEditingId(""); setTeamForm(initialTeamForm); }}>Cancel</button>}
@@ -385,10 +510,11 @@ function AdminContent() {
                       <div>
                         <strong>{member.name}</strong>
                         <div className="text-muted">{member.role}</div>
-                        <small className="text-muted">{member.copy}</small>
+                        <small className="text-muted d-block mb-2">{member.copy}</small>
+                        <small className="text-muted">{resolveImageAsset(member) ? "Profile image attached" : "No profile image yet"}</small>
                       </div>
                       <div className="d-flex gap-2">
-                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setTeamEditingId(member.id); setTeamForm({ name: member.name || "", role: member.role || "", copy: member.copy || "", image: member.image || "" }); }}>Edit</button>
+                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setTeamEditingId(member.id); setTeamForm({ name: member.name || "", role: member.role || "", copy: member.copy || "", image: resolveImageAsset(member), imageFile: null }); }}>Edit</button>
                         <button className="btn btn-outline-light btn-sm" type="button" onClick={() => handleDelete(`/api/admin/team/${member.id}`, "Team member deleted.")}>Delete</button>
                       </div>
                     </div>
@@ -404,7 +530,17 @@ function AdminContent() {
                   <div className="mb-3"><label className="form-label">Name</label><input className="form-control" value={testimonialForm.name} onChange={(event) => setTestimonialForm((prev) => ({ ...prev, name: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Role</label><input className="form-control" value={testimonialForm.role} onChange={(event) => setTestimonialForm((prev) => ({ ...prev, role: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Quote</label><textarea className="form-control" rows="4" value={testimonialForm.quote} onChange={(event) => setTestimonialForm((prev) => ({ ...prev, quote: event.target.value }))} /></div>
-                  <div className="mb-3"><label className="form-label">Image URL</label><input className="form-control" value={testimonialForm.image} onChange={(event) => setTestimonialForm((prev) => ({ ...prev, image: event.target.value }))} /></div>
+                  <AssetField
+                    label="Testimonial image"
+                    accept="image/*"
+                    fileName={testimonialForm.imageFile?.name}
+                    currentAsset={testimonialForm.image}
+                    urlLabel="Image URL fallback"
+                    urlValue={testimonialForm.image}
+                    onUrlChange={(event) => setTestimonialForm((prev) => ({ ...prev, image: event.target.value }))}
+                    onFileChange={(event) => setTestimonialForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    placeholder="https://example.com/testimonial.jpg"
+                  />
                   <div className="d-flex gap-2 flex-wrap">
                     <button className="btn btn-accent" type="submit">{testimonialEditingId ? "Update testimonial" : "Add testimonial"}</button>
                     {testimonialEditingId && <button className="btn btn-outline-light" type="button" onClick={() => { setTestimonialEditingId(""); setTestimonialForm(initialTestimonialForm); }}>Cancel</button>}
@@ -421,10 +557,11 @@ function AdminContent() {
                       <div>
                         <strong>{item.name}</strong>
                         <div className="text-muted">{item.role}</div>
-                        <small className="text-muted">{item.quote}</small>
+                        <small className="text-muted d-block mb-2">{item.quote}</small>
+                        <small className="text-muted">{resolveImageAsset(item) ? "Image attached" : "No image yet"}</small>
                       </div>
                       <div className="d-flex gap-2">
-                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setTestimonialEditingId(item.id); setTestimonialForm({ name: item.name || "", role: item.role || "", quote: item.quote || "", image: item.image || "" }); }}>Edit</button>
+                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setTestimonialEditingId(item.id); setTestimonialForm({ name: item.name || "", role: item.role || "", quote: item.quote || "", image: resolveImageAsset(item), imageFile: null }); }}>Edit</button>
                         <button className="btn btn-outline-light btn-sm" type="button" onClick={() => handleDelete(`/api/admin/testimonials/${item.id}`, "Testimonial deleted.")}>Delete</button>
                       </div>
                     </div>
@@ -439,7 +576,21 @@ function AdminContent() {
                 <form onSubmit={handleVideoSubmit}>
                   <div className="row gy-3">
                     <div className="col-md-6"><label className="form-label">Title</label><input className="form-control" value={video.title} onChange={(event) => setVideo((prev) => ({ ...prev, title: event.target.value }))} /></div>
-                    <div className="col-md-6"><label className="form-label">YouTube URL</label><input className="form-control" value={video.youtube_url} onChange={(event) => setVideo((prev) => ({ ...prev, youtube_url: event.target.value }))} /></div>
+                    <div className="col-md-6"><label className="form-label">YouTube URL fallback</label><input className="form-control" value={video.youtube_url} onChange={(event) => setVideo((prev) => ({ ...prev, youtube_url: event.target.value }))} placeholder="https://youtube.com/watch?v=..." /></div>
+                    <div className="col-12">
+                      <AssetField
+                        label="Upload event video"
+                        accept="video/*"
+                        fileName={video.videoFile?.name}
+                        currentAsset={video.video_url}
+                        assetType="video"
+                        urlLabel="Hosted video URL fallback"
+                        urlValue={video.video_url}
+                        onUrlChange={(event) => setVideo((prev) => ({ ...prev, video_url: event.target.value }))}
+                        onFileChange={(event) => setVideo((prev) => ({ ...prev, videoFile: event.target.files?.[0] || null }))}
+                        placeholder="https://example.com/event-overview.mp4"
+                      />
+                    </div>
                     <div className="col-12"><button className="btn btn-accent" type="submit">Update event video</button></div>
                   </div>
                 </form>

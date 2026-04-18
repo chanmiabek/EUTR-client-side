@@ -479,10 +479,11 @@ function About() {
                     }
                     alt={member.name}
                   />
-                  <div>
+                  <div className="team-card-body">
+                    <div className="team-card-kicker">Team member</div>
                     <h5 className="mb-1">{member.name}</h5>
                     <div className="text-muted mb-2">{member.role}</div>
-                    <p className="text-muted mb-0">{member.copy}</p>
+                    <p className="text-muted mb-0">{member.copy || member.bio || member.description}</p>
                   </div>
                 </div>
               </div>

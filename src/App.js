@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Donate from "./pages/Donate";
+import DonationStatus from "./pages/DonationStatus";
 import WorkWithEurt from "./pages/WorkWithEurt";
 import Volunteer from "./pages/Volunteer";
 import JoinUs from "./pages/JoinUs";
@@ -21,15 +22,19 @@ import AdminLogin from "./pages/AdminLogin";
 function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const isDonateRoute = location.pathname === "/donate" || location.pathname === "/donate/status";
+  const showSiteChrome = !isAdminRoute && !isDonateRoute;
+  const showAdminNavbar = isAdminRoute;
 
   return (
     <div className="app">
-      {isAdminRoute ? <AdminNavbar /> : <SiteNavbar />}
-      <main>
+      {showAdminNavbar ? <AdminNavbar /> : showSiteChrome ? <SiteNavbar /> : null}
+      <main className={showSiteChrome || showAdminNavbar ? "" : "main-without-chrome"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/donate" element={<Donate />} />
+          <Route path="/donate/status" element={<DonationStatus />} />
           <Route path="/work-with-eurt" element={<WorkWithEurt />} />
           <Route path="/volunteer" element={<Volunteer />} />
           <Route path="/join-us" element={<JoinUs />} />
@@ -43,7 +48,7 @@ function App() {
           </Route>
         </Routes>
       </main>
-      {!isAdminRoute && <SiteFooter />}
+      {showSiteChrome && <SiteFooter />}
     </div>
   );
 }

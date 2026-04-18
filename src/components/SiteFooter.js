@@ -17,7 +17,7 @@ function SiteFooter() {
                 style={{ width: "56px", height: "56px", borderRadius: "50%" }}
               />
               <div>
-                <h5 className="mb-1">Educate Us To Rise(EUTR)</h5>
+                <h5 className="mb-1">Educate Us to Rise(EUR)</h5>
                 <small className="text-muted">Education | Unity</small>
               </div>
             </div>
@@ -76,13 +76,13 @@ function SiteFooter() {
           </div>
           <div className="col-6 col-lg-2">
             <h6 className="text-uppercase text-muted">Contact</h6>
-            <p className="text-muted mb-1">EUTR Community Hub</p>
+            <p className="text-muted mb-1">EUR Community Hub</p>
             <p className="text-muted mb-1">Kakuma, Kenya</p>
             <p className="text-muted">educateustorrise@gmail.com</p>
           </div>
         </div>
         <div className="d-flex flex-wrap justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
-          <small> &copy; {currentYear}, Educate Us To Rise(EUTR). All rights reserved.</small>
+          <small> &copy; {currentYear}, Educate Us to Rise(EUR). All rights reserved.</small>
           <small className="text-muted">Privacy | Terms | Accessibility</small>
         </div>
       </div>

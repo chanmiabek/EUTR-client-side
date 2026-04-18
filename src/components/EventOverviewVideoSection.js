@@ -6,6 +6,15 @@ const fallbackVideo = {
   youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 };
 
+const resolveVideoUrl = (value) => {
+  if (!value || typeof value !== "string") return "";
+  if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:") || value.startsWith("blob:")) {
+    return value;
+  }
+  if (value.startsWith("/")) return value;
+  return `/${value}`;
+};
+
 const extractYoutubeId = (url) => {
   if (!url) return "";
 
@@ -34,10 +43,11 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
         const response = await fetch(getApiUrl("/api/event-overview-video/"));
         if (!response.ok) throw new Error("No event overview video found");
         const data = await response.json();
-        if (isMounted && data?.youtube_url) {
+        if (isMounted && (data?.youtube_url || data?.video_url || data?.video || data?.file || data?.media)) {
           setVideo({
             title: data.title || fallbackVideo.title,
-            youtube_url: data.youtube_url
+            youtube_url: data.youtube_url || "",
+            video_url: resolveVideoUrl(data.video_url || data.video || data.file || data.media)
           });
         }
       } catch (error) {
@@ -58,6 +68,8 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
     return youtubeId ? `https://www.youtube.com/embed/${youtubeId}` : "";
   }, [video]);
 
+  const directVideoUrl = useMemo(() => resolveVideoUrl(video?.video_url), [video]);
+
   return (
     <section className={className}>
       <div className="container">
@@ -71,7 +83,18 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
             </div>
           </div>
           {loading && <p className="text-muted mb-3">Loading video...</p>}
-          {embedUrl ? (
+          {directVideoUrl ? (
+            <div className="ratio ratio-16x9 rounded overflow-hidden">
+              <video
+                title="Event overview video"
+                src={directVideoUrl}
+                controls
+                playsInline
+                preload="metadata"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
+          ) : embedUrl ? (
             <div className="ratio ratio-16x9 rounded overflow-hidden">
               <iframe
                 title="Event overview video"
