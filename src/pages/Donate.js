@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 // Donate.jsx - Compact card-sized panels for all payment methods
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
 import { getApiUrl, postJson, readApiError } from "../utils/api";
@@ -11,20 +11,25 @@ import "../pages/Donate.css";
 // CONSTANTS & CONFIGURATION
 // ============================================
 
-const DONATION_INITIATE_ENDPOINT = process.env.REACT_APP_DONATION_INITIATE_ENDPOINT || "/api/donations/initiate-payment/";
-const PAYPAL_CAPTURE_ENDPOINT = process.env.REACT_APP_PAYPAL_CAPTURE_ENDPOINT || "/api/paypal/capture";
+const DONATION_INITIATE_ENDPOINT =
+  process.env.REACT_APP_DONATION_INITIATE_ENDPOINT || "/api/donations/initiate-payment";
+const DONATION_STATUS_PATH = process.env.REACT_APP_DONATION_STATUS_PATH || "/donate/status";
+const PAYPAL_CAPTURE_ENDPOINT =
+  process.env.REACT_APP_PAYPAL_CAPTURE_ENDPOINT || "/api/paypal/capture";
+
+const PAYPAL_PRESET_AMOUNTS = [10, 25, 50];
+const DEFAULT_PAYPAL_AMOUNT = PAYPAL_PRESET_AMOUNTS[1];
 
 const defaultPaymentConfig = {
-  mode: "mock",
   methods: {
-    mpesa: { enabled: true, currency: "KES" },
-    paypal: { enabled: true, currency: "USD" }
+    mpesa: { enabled: true, live: false, currency: "KES" },
+    paypal: { enabled: true, live: false, currency: "USD" }
   }
 };
 
 const PAYMENT_CHOICES = [
   { key: "paypal", method: "paypal", type: "express", label: "PayPal", helper: "PayPal balance or guest checkout" },
-  { key: "card", method: "card", type: "card", label: "Debit or Credit Card", helper: "Secure card checkout via PayPal" },
+  { key: "card", method: "card", type: "card", label: "Debit or Credit Card (No PayPal account)", helper: "Pay with a card on PayPal checkout" },
   { key: "mpesa", method: "mpesa", type: "mpesa", label: "M-Pesa", helper: "Mobile money - STK push to phone" }
 ];
 
@@ -127,11 +132,24 @@ function LoadingOverlay({ message }) {
 // ============================================
 
 function Donate() {
-  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // Form State
-  const [mpesaForm, setMpesaForm] = useState({ phone: "", email: "", amount: "" });
-  const [mpesaErrors, setMpesaErrors] = useState({ phone: "", email: "", amount: "" });
+  const [mpesaForm, setMpesaForm] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    amount: ""
+  });
+  const [paypalAmount, setPaypalAmount] = useState(DEFAULT_PAYPAL_AMOUNT);
+  const [mpesaErrors, setMpesaErrors] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    amount: ""
+  });
   const [paymentConfig, setPaymentConfig] = useState(defaultPaymentConfig);
 
   // UI State
@@ -147,6 +165,19 @@ function Donate() {
 
   // Refs
   const toastTimerRef = useRef(null);
+  const goToDonationStatus = (donationId, paymentMethod) => {
+    if (!donationId) return;
+    const query = new URLSearchParams();
+    query.set("donationId", donationId);
+    if (paymentMethod) query.set("paymentMethod", paymentMethod);
+    navigate(`${DONATION_STATUS_PATH}?${query.toString()}`);
+  };
+
+  const isPaymentMethodEnabled = (method) => {
+    if (method === "mpesa") return Boolean(paymentConfig?.methods?.mpesa?.enabled);
+    if (method === "paypal" || method === "card") return Boolean(paymentConfig?.methods?.paypal?.enabled);
+    return false;
+  };
 
   // ============================================
   // PAYPAL RETURN HANDLERS (SUCCESS/CANCEL)
@@ -168,7 +199,7 @@ function Donate() {
         setToast({ type: "success", message: "✅ Payment successful! Thank you for your donation.", visible: true });
 
         setTimeout(() => {
-          setMpesaForm({ phone: "", email: "", amount: "" });
+          setMpesaForm({ firstName: "", lastName: "", phone: "", email: "", amount: "" });
           setActiveChoice("");
           setActiveMethod("");
           window.location.href = "/donate";
@@ -204,28 +235,29 @@ function Donate() {
     setSubmitting(true);
 
     try {
-      const payload = {
-        paymentMethod: method,
-        payment_method: method,
-        return_url: `${window.location.origin}/donate`,
-        cancel_url: `${window.location.origin}/donate`
+      const amountNumber = Number(paypalAmount || 0) || DEFAULT_PAYPAL_AMOUNT;
+
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = getApiUrl("/api/donations/paypal/start");
+      form.style.display = "none";
+
+      const appendField = (name, value) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = String(value ?? "");
+        form.appendChild(input);
       };
 
-      const response = await postJson(DONATION_INITIATE_ENDPOINT, payload);
-      
-      if (!response.ok) {
-        const errorMsg = await readApiError(response);
-        throw new Error(errorMsg || `Server error: ${response.status}`);
-      }
+      appendField("paymentMethod", "paypal");
+      appendField("payment_method", "paypal");
+      appendField("checkoutMethod", method);
+      appendField("amount", amountNumber);
+      appendField("currency", paymentConfig?.methods?.paypal?.currency || "USD");
 
-      const data = await response.json();
-      
-      const approvalUrl = data?.redirect_url || data?.approval_url;
-      if (!approvalUrl) {
-        throw new Error("No PayPal redirect URL received.");
-      }
-
-      window.location.href = approvalUrl;
+      document.body.appendChild(form);
+      form.submit();
     } catch (error) {
       console.error("PayPal error:", error);
       setPaypalError(error.message || "Failed to connect. Please try again.");
@@ -238,16 +270,26 @@ function Donate() {
   // ============================================
 
   const validateMpesaForm = () => {
-    const errors = { phone: "", email: "", amount: "" };
+    const errors = { firstName: "", lastName: "", phone: "", email: "", amount: "" };
     let isValid = true;
+
+    if (!mpesaForm.firstName.trim()) {
+      errors.firstName = "Required";
+      isValid = false;
+    }
+
+    if (!mpesaForm.lastName.trim()) {
+      errors.lastName = "Required";
+      isValid = false;
+    }
 
     if (!mpesaForm.phone) {
       errors.phone = "Required";
       isValid = false;
     } else {
-      const phoneRegex = /^254||0[7][0-9]{8}$/;
+      const phoneRegex = /^(2547\d{8}|07\d{8}|7\d{8})$/;
       if (!phoneRegex.test(mpesaForm.phone)) {
-        errors.phone = "2547XXXXXXXX";
+        errors.phone = "Use 2547XXXXXXXX or 07XXXXXXXX";
         isValid = false;
       }
     }
@@ -278,6 +320,8 @@ function Donate() {
 
     try {
       const payload = {
+        firstName: mpesaForm.firstName,
+        lastName: mpesaForm.lastName,
         phone: mpesaForm.phone,
         email: mpesaForm.email,
         amount: Number(mpesaForm.amount || 0),
@@ -304,12 +348,9 @@ function Donate() {
 
       setMpesaStatus({ type: "success", message: "✅ Prompt sent! Check your phone." });
       setToast({ type: "success", message: "M-Pesa prompt sent! Check your phone.", visible: true });
+      const donationId = data?.donation?.id || data?.donationId || data?.id || "";
+      goToDonationStatus(donationId, "mpesa");
 
-      setTimeout(() => {
-        setMpesaForm({ phone: "", email: "", amount: "" });
-        setActiveChoice("");
-        setActiveMethod("");
-      }, 3000);
     } catch (error) {
       console.error("M-Pesa error:", error);
       setMpesaStatus({ type: "error", message: error.message || "Something went wrong." });
@@ -332,6 +373,15 @@ function Donate() {
   };
 
   const openPaymentChoice = (choice) => {
+    if (!isPaymentMethodEnabled(choice.method)) {
+      const message =
+        choice.method === "mpesa"
+          ? "M-Pesa is not configured on the server yet."
+          : "PayPal is not configured on the server yet.";
+      setToast({ type: "error", message, visible: true });
+      return;
+    }
+
     const nextChoice = activeChoice === choice.key ? "" : choice.key;
     setActiveChoice(nextChoice);
     setActiveMethod(nextChoice ? choice.method : "");
@@ -340,7 +390,8 @@ function Donate() {
     setMpesaStatus({ type: "idle", message: "" });
     
     if (!nextChoice) {
-      setMpesaForm({ phone: "", email: "", amount: "" });
+      setMpesaForm({ firstName: "", lastName: "", phone: "", email: "", amount: "" });
+      setPaypalAmount(DEFAULT_PAYPAL_AMOUNT);
     }
   };
 
@@ -350,6 +401,8 @@ function Donate() {
     setMpesaConfirmOpen(false);
     setPaypalError("");
     setMpesaStatus({ type: "idle", message: "" });
+    setMpesaForm({ firstName: "", lastName: "", phone: "", email: "", amount: "" });
+    setPaypalAmount(DEFAULT_PAYPAL_AMOUNT);
   };
 
   const handleMpesaReview = (event) => {
@@ -362,21 +415,6 @@ function Donate() {
   // ============================================
   // EFFECTS
   // ============================================
-
-  useEffect(() => {
-    const token = searchParams.get("token");
-    const payerId = searchParams.get("PayerID");
-    const cancel = searchParams.get("cancel");
-
-    if (cancel === "true" || searchParams.get("cancel") !== null) {
-      handlePayPalCancel();
-      return;
-    }
-
-    if (token && payerId) {
-      handlePayPalReturn(token, payerId);
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -392,18 +430,16 @@ function Donate() {
 
   useEffect(() => {
     let isActive = true;
-    fetch(getApiUrl("/api/donations/payment-section/"))
+    fetch(getApiUrl("/api/payment-section/"))
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (!isActive || !data) return;
-        const normalizedConfig = {
-          mode: data?.mode || "mock",
+        setPaymentConfig({
           methods: {
             mpesa: { ...defaultPaymentConfig.methods.mpesa, ...(data?.methods?.mpesa || {}) },
             paypal: { ...defaultPaymentConfig.methods.paypal, ...(data?.methods?.paypal || {}) }
           }
-        };
-        setPaymentConfig(normalizedConfig);
+        });
       })
       .catch(() => {});
     return () => { isActive = false; };
@@ -458,7 +494,7 @@ function Donate() {
                       <p className="text-muted mb-0">Select your preferred way to donate</p>
                     </div>
                     <small className="text-muted payment-mode-badge">
-                      {paymentConfig.mode === "live" ? "Live" : "Test Mode"}
+                      {paymentConfig?.methods?.paypal?.live || paymentConfig?.methods?.mpesa?.live ? "Live" : "Test Mode"}
                     </small>
                   </div>
 
@@ -471,6 +507,7 @@ function Donate() {
                           className={`payment-method-button ${choice.type} ${activeChoice === choice.key ? "active" : ""}`}
                           onClick={() => openPaymentChoice(choice)}
                           aria-pressed={activeChoice === choice.key}
+                          disabled={!isPaymentMethodEnabled(choice.method)}
                         >
                           {choice.type === "express" && (
                             <>
@@ -565,6 +602,19 @@ function Donate() {
                       : "Pay with PayPal balance or guest checkout."}
                   </p>
 
+                  <div className="d-flex flex-wrap gap-2 mb-3">
+                    {PAYPAL_PRESET_AMOUNTS.map((amount) => (
+                      <button
+                        key={amount}
+                        type="button"
+                        className={`btn btn-outline-secondary btn-sm ${Number(paypalAmount) === amount ? "active" : ""}`}
+                        onClick={() => setPaypalAmount(amount)}
+                      >
+                        {paymentConfig?.methods?.paypal?.currency || "USD"} {amount}
+                      </button>
+                    ))}
+                  </div>
+
                   {paypalError && (
                     <div className="compact-error">{paypalError}</div>
                   )}
@@ -588,6 +638,28 @@ function Donate() {
 
                   <form onSubmit={handleMpesaReview}>
                     <div className="compact-fields">
+                      <input
+                        className={`compact-input ${mpesaErrors.firstName ? "is-invalid" : ""}`}
+                        type="text"
+                        name="firstName"
+                        value={mpesaForm.firstName}
+                        onChange={handleMpesaChange}
+                        placeholder="First name"
+                        required
+                      />
+                      {mpesaErrors.firstName && <div className="compact-feedback">{mpesaErrors.firstName}</div>}
+
+                      <input
+                        className={`compact-input ${mpesaErrors.lastName ? "is-invalid" : ""}`}
+                        type="text"
+                        name="lastName"
+                        value={mpesaForm.lastName}
+                        onChange={handleMpesaChange}
+                        placeholder="Last name"
+                        required
+                      />
+                      {mpesaErrors.lastName && <div className="compact-feedback">{mpesaErrors.lastName}</div>}
+
                       <input
                         className={`compact-input ${mpesaErrors.phone ? "is-invalid" : ""}`}
                         type="tel"

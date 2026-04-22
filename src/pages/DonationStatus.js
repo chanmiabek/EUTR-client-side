@@ -36,8 +36,9 @@ function DonationStatus() {
   const donationId = query.get("donationId") || "";
   const initialStatus = normalizeStatus(query.get("status"));
   const paymentMethod = query.get("paymentMethod") || "";
+  const initialDetail = query.get("detail") || "";
   const [status, setStatus] = useState(initialStatus);
-  const [detail, setDetail] = useState("");
+  const [detail, setDetail] = useState(initialDetail);
   const [loading, setLoading] = useState(Boolean(donationId));
 
   useEffect(() => {
