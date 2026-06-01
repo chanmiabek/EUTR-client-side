@@ -359,21 +359,39 @@ function AdminContent() {
     await saveRequest(deleteJson(path, { headers: adminHeaders }), successMessage);
   };
 
+  const dashboardStats = [
+    { label: "Programs", value: programs.length },
+    { label: "Events", value: events.length },
+    { label: "Partners", value: partners.length },
+    { label: "Team", value: team.length },
+    { label: "Stories", value: testimonials.length },
+    { label: "Overview", value: video.video_url || video.youtube_url ? "Live" : "Draft" }
+  ];
+
+  const dashboardSections = [
+    { label: "Programs", href: "#admin-programs" },
+    { label: "Events", href: "#admin-events" },
+    { label: "Partners", href: "#admin-partners" },
+    { label: "Team", href: "#admin-team" },
+    { label: "Testimonials", href: "#admin-testimonials" },
+    { label: "Video", href: "#admin-video" }
+  ];
+
   if (!session?.token) {
     return <Navigate to="/admin/login" replace />;
   }
 
   return (
-    <div>
+    <div className="admin-dashboard-page">
       <PageHero
         eyebrow="Admin"
-        title="Manage site content from one place."
-        copy="Update programs, events, partners, team members, testimonials, and the event overview video."
+        title="Organisational administration dashboard."
+        copy="Maintain public content, media, partners, team profiles, and impact stories from one controlled workspace."
         backgroundImage={heroImage}
         backgroundAlt="Admin dashboard hero"
       >
         <h5 className="mb-3">Admin dashboard</h5>
-        <p className="text-muted mb-3">You are signed in. This page stays hidden from the main navbar.</p>
+        <p className="text-muted mb-3">Signed in as {session?.user?.email || "admin"}.</p>
         <button className="btn btn-outline-light btn-sm" type="button" onClick={handleLogout}>
           Logout
         </button>
@@ -381,30 +399,50 @@ function AdminContent() {
 
       <section className="section section-tight">
         <div className="container">
-          <div className="support-card mb-4 admin-session-bar">
+          <div className="admin-command-center mb-4">
             <div>
-              <strong>{session?.user?.name || "Admin session"}</strong>
-              <div className="text-muted">
+              <div className="admin-eyebrow">Workspace</div>
+              <h3 className="mb-1">{session?.user?.name || "Content operations"}</h3>
+              <p className="text-muted mb-0">
                 Signed in as {session?.user?.email || "admin"}.
                 {session?.expiresAt ? ` Session ends at ${new Date(session.expiresAt).toLocaleTimeString()}.` : ""}
-              </div>
+              </p>
             </div>
-            <button className="btn btn-outline-light btn-sm" type="button" onClick={handleLogout}>
-              Logout
-            </button>
+            <div className="admin-quick-nav" aria-label="Admin sections">
+              {dashboardSections.map((item) => (
+                <a className="admin-quick-link" href={item.href} key={item.href}>{item.label}</a>
+              ))}
+            </div>
           </div>
 
           {status.message && (
-            <div className="support-card mb-4">
+            <div className={`admin-status admin-status-${status.type || "info"} mb-4`}>
               <small className={`${status.type === "error" ? "text-danger" : "text-success"}`}>{status.message}</small>
             </div>
           )}
 
           {loading && <p className="text-muted">Loading admin content...</p>}
 
-          <div className="row gy-4">
+          <div className="admin-metrics-grid mb-4">
+            {dashboardStats.map((item) => (
+              <div className="admin-metric-card" key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="admin-section-heading" id="admin-programs">
+            <div>
+              <span className="admin-eyebrow">Content library</span>
+              <h3>Programs</h3>
+            </div>
+            <p className="text-muted mb-0">Create and maintain program cards, descriptions, images, and highlights.</p>
+          </div>
+
+          <div className="row gy-4 admin-dashboard-grid">
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">{programEditingId ? "Edit program" : "Add program"}</h4>
                 <form onSubmit={handleProgramSubmit}>
                   <div className="mb-3"><label className="form-label">Title</label><input className="form-control" value={programForm.title} onChange={(event) => setProgramForm((prev) => ({ ...prev, title: event.target.value }))} /></div>
@@ -432,7 +470,7 @@ function AdminContent() {
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">Current programs</h4>
                 <div className="admin-list">
                   {programs.map((item) => (
@@ -453,8 +491,18 @@ function AdminContent() {
               </div>
             </div>
 
+            <div className="col-12">
+              <div className="admin-section-heading" id="admin-events">
+                <div>
+                  <span className="admin-eyebrow">Public calendar</span>
+                  <h3>Events</h3>
+                </div>
+                <p className="text-muted mb-0">Publish community activities with images, dates, locations, and highlights.</p>
+              </div>
+            </div>
+
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">{eventEditingId ? "Edit event" : "Add event"}</h4>
                 <form onSubmit={handleEventSubmit}>
                   <div className="mb-3"><label className="form-label">Title</label><input className="form-control" value={eventForm.title} onChange={(event) => setEventForm((prev) => ({ ...prev, title: event.target.value }))} /></div>
@@ -482,7 +530,7 @@ function AdminContent() {
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">Current events</h4>
                 <div className="admin-list">
                   {events.map((item) => (
@@ -503,8 +551,18 @@ function AdminContent() {
               </div>
             </div>
 
+            <div className="col-12">
+              <div className="admin-section-heading" id="admin-partners">
+                <div>
+                  <span className="admin-eyebrow">Relationships</span>
+                  <h3>Partners</h3>
+                </div>
+                <p className="text-muted mb-0">Manage partner names, links, and logos shown across the site.</p>
+              </div>
+            </div>
+
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">{partnerEditingId ? "Edit partner" : "Add partner"}</h4>
                 <form onSubmit={handlePartnerSubmit}>
                   <div className="mb-3"><label className="form-label">Name</label><input className="form-control" value={partnerForm.name} onChange={(event) => setPartnerForm((prev) => ({ ...prev, name: event.target.value }))} /></div>
@@ -528,7 +586,7 @@ function AdminContent() {
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">Current partners</h4>
                 <div className="admin-list">
                   {partners.map((item) => (
@@ -548,8 +606,18 @@ function AdminContent() {
               </div>
             </div>
 
+            <div className="col-12">
+              <div className="admin-section-heading" id="admin-team">
+                <div>
+                  <span className="admin-eyebrow">People</span>
+                  <h3>Team profiles</h3>
+                </div>
+                <p className="text-muted mb-0">Keep leadership and staff biographies current and image-backed.</p>
+              </div>
+            </div>
+
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">{teamEditingId ? "Edit team member" : "Add team member"}</h4>
                 <form onSubmit={handleTeamSubmit}>
                   <div className="mb-3"><label className="form-label">Name</label><input className="form-control" value={teamForm.name} onChange={(event) => setTeamForm((prev) => ({ ...prev, name: event.target.value }))} /></div>
@@ -574,7 +642,7 @@ function AdminContent() {
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">Current team</h4>
                 <div className="admin-list">
                   {team.map((member) => (
@@ -595,8 +663,18 @@ function AdminContent() {
               </div>
             </div>
 
+            <div className="col-12">
+              <div className="admin-section-heading" id="admin-testimonials">
+                <div>
+                  <span className="admin-eyebrow">Community proof</span>
+                  <h3>Testimonials</h3>
+                </div>
+                <p className="text-muted mb-0">Curate quotes and community voices used on the public site.</p>
+              </div>
+            </div>
+
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">{testimonialEditingId ? "Edit testimonial" : "Add testimonial"}</h4>
                 <form onSubmit={handleTestimonialSubmit}>
                   <div className="mb-3"><label className="form-label">Name</label><input className="form-control" value={testimonialForm.name} onChange={(event) => setTestimonialForm((prev) => ({ ...prev, name: event.target.value }))} /></div>
@@ -621,7 +699,7 @@ function AdminContent() {
               </div>
             </div>
             <div className="col-lg-6">
-              <div className="support-card h-100">
+              <div className="support-card admin-panel h-100">
                 <h4 className="mb-3">Current testimonials</h4>
                 <div className="admin-list">
                   {testimonials.map((item) => (
@@ -643,7 +721,17 @@ function AdminContent() {
             </div>
 
             <div className="col-12">
-              <div className="support-card">
+              <div className="admin-section-heading" id="admin-video">
+                <div>
+                  <span className="admin-eyebrow">Featured media</span>
+                  <h3>Event overview video</h3>
+                </div>
+                <p className="text-muted mb-0">Control the featured video section displayed on public pages.</p>
+              </div>
+            </div>
+
+            <div className="col-12">
+              <div className="support-card admin-panel admin-video-panel">
                 <h4 className="mb-3">Event overview video</h4>
                 <div className="admin-list-card mb-4">
                   <div>
