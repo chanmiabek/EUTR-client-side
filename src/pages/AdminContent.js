@@ -14,6 +14,13 @@ import { readStoredSession, writeStoredSession } from "../utils/adminSession";
 const initialTeamForm = { name: "", role: "", copy: "", image: "", imageFile: null };
 const initialTestimonialForm = { name: "", role: "", quote: "", image: "", imageFile: null };
 const initialVideoForm = { title: "", description: "", youtube_url: "", video_url: "", videoFile: null };
+const defaultOverviewVideo = {
+  title: "Event Overview",
+  description: "Watch our event overview on YouTube.",
+  youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  video_url: "",
+  videoFile: null
+};
 const initialProgramForm = {
   title: "",
   focus: "",
@@ -186,13 +193,30 @@ function AdminContent() {
       setTeam(Array.isArray(teamData) ? teamData : teamData?.results || []);
       setPartners(Array.isArray(partnerData) ? partnerData : partnerData?.results || []);
       setTestimonials(Array.isArray(testimonialData) ? testimonialData : testimonialData?.results || []);
-      setVideo({
-        title: videoData?.title || "",
-        description: videoData?.description || "",
-        youtube_url: resolveYoutubeAsset(videoData),
-        video_url: resolveVideoAsset(videoData),
-        videoFile: null
-      });
+      if (videoData?.deleted) {
+        setVideo(initialVideoForm);
+      } else {
+        const hasSavedVideo =
+          videoData?.title ||
+          videoData?.description ||
+          videoData?.youtube_url ||
+          videoData?.video_url ||
+          videoData?.video ||
+          videoData?.file ||
+          videoData?.media;
+
+        setVideo(
+          hasSavedVideo
+            ? {
+                title: videoData?.title || "",
+                description: videoData?.description || "",
+                youtube_url: resolveYoutubeAsset(videoData),
+                video_url: resolveVideoAsset(videoData),
+                videoFile: null
+              }
+            : defaultOverviewVideo
+        );
+      }
     } catch {
       setMessage("error", "Unable to load admin content.");
     } finally {
@@ -621,6 +645,26 @@ function AdminContent() {
             <div className="col-12">
               <div className="support-card">
                 <h4 className="mb-3">Event overview video</h4>
+                <div className="admin-list-card mb-4">
+                  <div>
+                    <strong>{video.title || "No event overview video"}</strong>
+                    <small className="text-muted d-block mb-2">
+                      {video.description || "No description set."}
+                    </small>
+                    <small className="text-muted">
+                      {video.video_url
+                        ? "Hosted video attached"
+                        : video.youtube_url
+                          ? "YouTube fallback attached"
+                          : "No video source set"}
+                    </small>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <button className="btn btn-outline-light btn-sm" type="button" onClick={handleVideoDelete}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
                 <form onSubmit={handleVideoSubmit}>
                   <div className="row gy-3">
                     <div className="col-md-6"><label className="form-label">Title</label><input className="form-control" value={video.title} onChange={(event) => setVideo((prev) => ({ ...prev, title: event.target.value }))} /></div>

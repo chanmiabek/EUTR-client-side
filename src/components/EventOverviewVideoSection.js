@@ -48,6 +48,7 @@ const resolveOverviewVideo = (data) => {
 
 function EventOverviewVideoSection({ className = "section section-tight" }) {
   const [video, setVideo] = useState(fallbackVideo);
+  const [isDeleted, setIsDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,6 +59,10 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
         const response = await fetch(getApiUrl("/api/event-overview-video/"));
         if (!response.ok) throw new Error("No event overview video found");
         const data = await response.json();
+        if (data?.deleted) {
+          if (isMounted) setIsDeleted(true);
+          return;
+        }
         const resolved = resolveOverviewVideo(data);
         if (isMounted && (resolved.youtube_url || resolved.video_url)) {
           setVideo({
@@ -86,6 +91,8 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
   }, [video]);
 
   const directVideoUrl = useMemo(() => resolveVideoUrl(video?.video_url), [video]);
+
+  if (!loading && isDeleted) return null;
 
   return (
     <section className={className}>
