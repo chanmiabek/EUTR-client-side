@@ -99,7 +99,8 @@ function AssetField({
   urlValue,
   onUrlChange,
   onFileChange,
-  placeholder
+  placeholder,
+  showUrlField = true
 }) {
   const previewAsset =
     currentAsset && String(currentAsset).startsWith("/") ? getApiUrl(currentAsset) : currentAsset;
@@ -120,13 +121,17 @@ function AssetField({
           )}
         </div>
       )}
-      <label className="form-label mt-3">{urlLabel}</label>
-      <input
-        className="form-control"
-        value={urlValue}
-        onChange={onUrlChange}
-        placeholder={placeholder}
-      />
+      {showUrlField && (
+        <>
+          <label className="form-label mt-3">{urlLabel}</label>
+          <input
+            className="form-control"
+            value={urlValue}
+            onChange={onUrlChange}
+            placeholder={placeholder}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -621,6 +626,9 @@ function AdminContent() {
                     <div className="col-md-6"><label className="form-label">YouTube URL fallback</label><input className="form-control" value={video.youtube_url} onChange={(event) => setVideo((prev) => ({ ...prev, youtube_url: event.target.value }))} placeholder="https://youtube.com/watch?v=..." /></div>
                     <div className="col-12"><label className="form-label">Description</label><textarea className="form-control" rows="3" value={video.description} onChange={(event) => setVideo((prev) => ({ ...prev, description: event.target.value }))} placeholder="Short description shown above the video." /></div>
                     <div className="col-12">
+                      <p className="text-muted mb-2">
+                        Select a video file and save to replace the current public event overview video.
+                      </p>
                       <AssetField
                         label="Upload event video"
                         accept="video/*"
@@ -629,6 +637,7 @@ function AdminContent() {
                         assetType="video"
                         urlLabel="Hosted video URL fallback"
                         urlValue={video.video_url}
+                        showUrlField={false}
                         onUrlChange={(event) => setVideo((prev) => ({ ...prev, video_url: event.target.value, videoFile: null }))}
                         onFileChange={(event) => {
                           const file = event.target.files?.[0] || null;
