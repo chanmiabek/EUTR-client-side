@@ -28,7 +28,16 @@ function Volunteer() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const response = await postJson("/api/volunteer/", form);
+      const payload = {
+        fullName: form.name,
+        emailAddress: form.email,
+        phone: form.phone,
+        volunteerRole: form.role,
+        availability: form.availability,
+        motivation: form.message
+      };
+
+      const response = await postJson("/api/volunteer", payload);
 
       if (!response.ok) {
         throw new Error("Volunteer request failed.");

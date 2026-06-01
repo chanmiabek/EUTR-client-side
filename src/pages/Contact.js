@@ -31,7 +31,7 @@ function Contact() {
         message: form.message.trim()
       };
 
-      const response = await postJson("/api/contact/", payload);
+      const response = await postJson("/api/contact", payload);
 
       if (!response.ok) {
         const message = await readApiError(response);

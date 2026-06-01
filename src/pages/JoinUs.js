@@ -28,7 +28,16 @@ function JoinUs() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const response = await postJson("/api/join-us/", form);
+      const payload = {
+        fullName: form.name,
+        emailAddress: form.email,
+        phone: form.phone,
+        desiredRole: form.interest,
+        startDate: form.startDate,
+        whyJoin: form.message
+      };
+
+      const response = await postJson("/api/join-us", payload);
 
       if (!response.ok) {
         throw new Error("Join request failed.");

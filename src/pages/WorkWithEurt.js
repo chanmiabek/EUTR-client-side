@@ -29,7 +29,18 @@ function WorkWithEurt() {
     setStatus({ type: "idle", message: "" });
 
     try {
-      const response = await postJson("/api/partner-appointments/", form);
+      const payload = {
+        organizationName: form.organization_name,
+        contactName: form.contact_name,
+        emailAddress: form.email,
+        phone: form.phone,
+        preferredDate: form.preferred_date,
+        preferredTime: form.preferred_time,
+        topic: form.topic,
+        message: form.message
+      };
+
+      const response = await postJson("/api/partner-appointments", payload);
 
       if (!response.ok) {
         throw new Error("Booking request failed.");
