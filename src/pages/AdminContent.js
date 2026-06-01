@@ -13,7 +13,7 @@ import { readStoredSession, writeStoredSession } from "../utils/adminSession";
 
 const initialTeamForm = { name: "", role: "", copy: "", image: "", imageFile: null };
 const initialTestimonialForm = { name: "", role: "", quote: "", image: "", imageFile: null };
-const initialVideoForm = { title: "", youtube_url: "", video_url: "", videoFile: null };
+const initialVideoForm = { title: "", description: "", youtube_url: "", video_url: "", videoFile: null };
 const initialProgramForm = {
   title: "",
   focus: "",
@@ -71,6 +71,9 @@ function AssetField({
   onFileChange,
   placeholder
 }) {
+  const previewAsset =
+    currentAsset && String(currentAsset).startsWith("/") ? getApiUrl(currentAsset) : currentAsset;
+
   return (
     <div className="mb-3">
       <label className="form-label">{label}</label>
@@ -78,12 +81,12 @@ function AssetField({
       <small className="text-muted d-block mt-2">
         {fileName ? `Selected file: ${fileName}` : "No file selected yet."}
       </small>
-      {currentAsset && (
+      {previewAsset && (
         <div className="admin-asset-preview mt-3">
           {assetType === "video" ? (
-            <video className="admin-asset-preview-media" src={currentAsset} controls preload="metadata" />
+            <video className="admin-asset-preview-media" src={previewAsset} controls preload="metadata" />
           ) : (
-            <img className="admin-asset-preview-media" src={currentAsset} alt={label} />
+            <img className="admin-asset-preview-media" src={previewAsset} alt={label} />
           )}
         </div>
       )}
@@ -149,6 +152,7 @@ function AdminContent() {
       setTestimonials(Array.isArray(testimonialData) ? testimonialData : testimonialData?.results || []);
       setVideo({
         title: videoData?.title || "",
+        description: videoData?.description || "",
         youtube_url: videoData?.youtube_url || "",
         video_url: resolveVideoAsset(videoData),
         videoFile: null
@@ -280,6 +284,14 @@ function AdminContent() {
     await saveRequest(
       putFormData("/api/admin/event-overview-video", payload, { headers: adminHeaders }),
       "Event overview video updated."
+    );
+  };
+
+  const handleVideoDelete = async () => {
+    await saveRequest(
+      deleteJson("/api/admin/event-overview-video", { headers: adminHeaders }),
+      "Event overview video deleted.",
+      () => setVideo(initialVideoForm)
     );
   };
 
@@ -577,6 +589,7 @@ function AdminContent() {
                   <div className="row gy-3">
                     <div className="col-md-6"><label className="form-label">Title</label><input className="form-control" value={video.title} onChange={(event) => setVideo((prev) => ({ ...prev, title: event.target.value }))} /></div>
                     <div className="col-md-6"><label className="form-label">YouTube URL fallback</label><input className="form-control" value={video.youtube_url} onChange={(event) => setVideo((prev) => ({ ...prev, youtube_url: event.target.value }))} placeholder="https://youtube.com/watch?v=..." /></div>
+                    <div className="col-12"><label className="form-label">Description</label><textarea className="form-control" rows="3" value={video.description} onChange={(event) => setVideo((prev) => ({ ...prev, description: event.target.value }))} placeholder="Short description shown above the video." /></div>
                     <div className="col-12">
                       <AssetField
                         label="Upload event video"
@@ -591,7 +604,10 @@ function AdminContent() {
                         placeholder="https://example.com/event-overview.mp4"
                       />
                     </div>
-                    <div className="col-12"><button className="btn btn-accent" type="submit">Update event video</button></div>
+                    <div className="col-12 d-flex gap-2 flex-wrap">
+                      <button className="btn btn-accent" type="submit">Update event video</button>
+                      <button className="btn btn-outline-light" type="button" onClick={handleVideoDelete}>Delete event video</button>
+                    </div>
                   </div>
                 </form>
               </div>

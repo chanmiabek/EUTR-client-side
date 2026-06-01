@@ -3,6 +3,7 @@ import { getApiUrl } from "../utils/api";
 
 const fallbackVideo = {
   title: "Event Overview",
+  description: "Watch our event overview on YouTube.",
   youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 };
 
@@ -11,7 +12,7 @@ const resolveVideoUrl = (value) => {
   if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:") || value.startsWith("blob:")) {
     return value;
   }
-  if (value.startsWith("/")) return value;
+  if (value.startsWith("/")) return getApiUrl(value);
   return `/${value}`;
 };
 
@@ -46,6 +47,7 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
         if (isMounted && (data?.youtube_url || data?.video_url || data?.video || data?.file || data?.media)) {
           setVideo({
             title: data.title || fallbackVideo.title,
+            description: data.description || "",
             youtube_url: data.youtube_url || "",
             video_url: resolveVideoUrl(data.video_url || data.video || data.file || data.media)
           });
@@ -78,8 +80,11 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
             <div className="col-lg-8">
               <h2>Event Overview Video</h2>
               <p className="section-copy mb-0">
-                {video?.title || "Watch our event overview on YouTube."}
+                {video?.title || fallbackVideo.title}
               </p>
+              {(video?.description || fallbackVideo.description) && (
+                <p className="text-muted mt-2 mb-0">{video?.description || fallbackVideo.description}</p>
+              )}
             </div>
           </div>
           {loading && <p className="text-muted mb-3">Loading video...</p>}
