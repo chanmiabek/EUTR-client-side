@@ -35,6 +35,7 @@ const initialEventForm = {
   highlights: ""
 };
 const initialPartnerForm = { name: "", link: "", logo_url: "", logoFile: null };
+const MAX_VIDEO_UPLOAD_BYTES = 500 * 1024 * 1024;
 
 const resolveImageAsset = (item) => item?.image || item?.photo || item?.avatar || "";
 const resolvePartnerAsset = (item) => item?.logo_url || item?.logo || item?.image || "";
@@ -641,6 +642,11 @@ function AdminContent() {
                         onUrlChange={(event) => setVideo((prev) => ({ ...prev, video_url: event.target.value, videoFile: null }))}
                         onFileChange={(event) => {
                           const file = event.target.files?.[0] || null;
+                          if (file && file.size > MAX_VIDEO_UPLOAD_BYTES) {
+                            event.target.value = "";
+                            setMessage("error", "Video is too large. Please upload a file under 500MB.");
+                            return;
+                          }
                           setVideo((prev) => ({
                             ...prev,
                             videoFile: file,
@@ -654,6 +660,7 @@ function AdminContent() {
                           Saving will replace the current hosted video with this uploaded file.
                         </small>
                       )}
+                      <small className="text-muted d-block mt-2">Maximum upload size: 500MB.</small>
                     </div>
                     <div className="col-12 d-flex gap-2 flex-wrap">
                       <button className="btn btn-accent" type="submit">Update event video</button>
