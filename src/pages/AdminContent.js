@@ -629,10 +629,22 @@ function AdminContent() {
                         assetType="video"
                         urlLabel="Hosted video URL fallback"
                         urlValue={video.video_url}
-                        onUrlChange={(event) => setVideo((prev) => ({ ...prev, video_url: event.target.value }))}
-                        onFileChange={(event) => setVideo((prev) => ({ ...prev, videoFile: event.target.files?.[0] || null }))}
+                        onUrlChange={(event) => setVideo((prev) => ({ ...prev, video_url: event.target.value, videoFile: null }))}
+                        onFileChange={(event) => {
+                          const file = event.target.files?.[0] || null;
+                          setVideo((prev) => ({
+                            ...prev,
+                            videoFile: file,
+                            video_url: file ? "" : prev.video_url
+                          }));
+                        }}
                         placeholder="https://example.com/event-overview.mp4"
                       />
+                      {video.videoFile && (
+                        <small className="text-muted d-block mt-2">
+                          Saving will replace the current hosted video with this uploaded file.
+                        </small>
+                      )}
                     </div>
                     <div className="col-12 d-flex gap-2 flex-wrap">
                       <button className="btn btn-accent" type="submit">Update event video</button>
