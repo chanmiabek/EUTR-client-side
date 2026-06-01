@@ -38,7 +38,26 @@ const initialPartnerForm = { name: "", link: "", logo_url: "", logoFile: null };
 
 const resolveImageAsset = (item) => item?.image || item?.photo || item?.avatar || "";
 const resolvePartnerAsset = (item) => item?.logo_url || item?.logo || item?.image || "";
-const resolveVideoAsset = (item) => item?.video_url || item?.video || item?.file || item?.media || "";
+const extractYoutubeId = (value) => {
+  const text = String(value || "").trim();
+  return (
+    text.match(/youtu\.be\/([^?&/]+)/i)?.[1] ||
+    text.match(/[?&]v=([^?&/]+)/i)?.[1] ||
+    text.match(/youtube\.com\/embed\/([^?&/]+)/i)?.[1] ||
+    ""
+  );
+};
+const isYoutubeAsset = (value) => Boolean(extractYoutubeId(value));
+const resolveVideoAsset = (item) => {
+  const hostedAsset = item?.video_url || item?.video || item?.file || item?.media || "";
+  if (hostedAsset) return hostedAsset;
+  return isYoutubeAsset(item?.youtube_url) ? "" : item?.youtube_url || "";
+};
+const resolveYoutubeAsset = (item) => {
+  const youtubeAsset = item?.youtube_url || "";
+  if (isYoutubeAsset(youtubeAsset)) return youtubeAsset;
+  return isYoutubeAsset(item?.video_url) ? item.video_url : "";
+};
 
 const buildFormData = (values, fileField) => {
   const formData = new FormData();
@@ -56,6 +75,17 @@ const buildFormData = (values, fileField) => {
     }
   }
 
+  return formData;
+};
+
+const buildVideoFormData = (values) => {
+  const formData = new FormData();
+  ["title", "description", "youtube_url", "video_url"].forEach((key) => {
+    formData.append(key, values[key] || "");
+  });
+  if (values.videoFile instanceof File) {
+    formData.append("video", values.videoFile);
+  }
   return formData;
 };
 
@@ -153,7 +183,7 @@ function AdminContent() {
       setVideo({
         title: videoData?.title || "",
         description: videoData?.description || "",
-        youtube_url: videoData?.youtube_url || "",
+        youtube_url: resolveYoutubeAsset(videoData),
         video_url: resolveVideoAsset(videoData),
         videoFile: null
       });
@@ -280,7 +310,7 @@ function AdminContent() {
 
   const handleVideoSubmit = async (event) => {
     event.preventDefault();
-    const payload = buildFormData(video, "video");
+    const payload = buildVideoFormData(video);
     await saveRequest(
       putFormData("/api/admin/event-overview-video", payload, { headers: adminHeaders }),
       "Event overview video updated."

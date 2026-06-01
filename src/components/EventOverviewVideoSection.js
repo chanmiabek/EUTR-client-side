@@ -32,6 +32,20 @@ const extractYoutubeId = (url) => {
   return "";
 };
 
+const isYoutubeUrl = (value) => Boolean(extractYoutubeId(value));
+
+const resolveOverviewVideo = (data) => {
+  const youtubeUrl = data?.youtube_url || "";
+  const hostedUrl = data?.video_url || data?.video || data?.file || data?.media || "";
+  const embedSource = isYoutubeUrl(youtubeUrl) ? youtubeUrl : isYoutubeUrl(hostedUrl) ? hostedUrl : "";
+  const directSource = !isYoutubeUrl(hostedUrl) && hostedUrl ? hostedUrl : !isYoutubeUrl(youtubeUrl) ? youtubeUrl : "";
+
+  return {
+    youtube_url: embedSource,
+    video_url: resolveVideoUrl(directSource)
+  };
+};
+
 function EventOverviewVideoSection({ className = "section section-tight" }) {
   const [video, setVideo] = useState(fallbackVideo);
   const [loading, setLoading] = useState(true);
@@ -44,12 +58,13 @@ function EventOverviewVideoSection({ className = "section section-tight" }) {
         const response = await fetch(getApiUrl("/api/event-overview-video/"));
         if (!response.ok) throw new Error("No event overview video found");
         const data = await response.json();
-        if (isMounted && (data?.youtube_url || data?.video_url || data?.video || data?.file || data?.media)) {
+        const resolved = resolveOverviewVideo(data);
+        if (isMounted && (resolved.youtube_url || resolved.video_url)) {
           setVideo({
             title: data.title || fallbackVideo.title,
             description: data.description || "",
-            youtube_url: data.youtube_url || "",
-            video_url: resolveVideoUrl(data.video_url || data.video || data.file || data.media)
+            youtube_url: resolved.youtube_url,
+            video_url: resolved.video_url
           });
         }
       } catch (error) {
