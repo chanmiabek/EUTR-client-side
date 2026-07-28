@@ -4,7 +4,7 @@ import { getApiUrl } from "../utils/api";
 const fallbackVideo = {
   title: "Event Overview",
   description: "Watch our event overview on YouTube.",
-  youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  youtube_url: ""
 };
 
 const resolveVideoUrl = (value) => {

@@ -106,7 +106,7 @@ function AdminLogin() {
         backgroundAlt="Admin login hero"
       >
         <h5 className="mb-3">Private access</h5>
-        <p className="text-muted mb-0">Open this area directly from the `/admin/login` URL.</p>
+        <p className="text-muted mb-0">This area is restricted to authorized administrators only.</p>
       </PageHero>
 
       <section className="section section-tight">

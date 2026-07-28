@@ -66,7 +66,7 @@ function SiteNavbar() {
           </ul>
           <div className="ms-lg-3">
             <Link className="btn btn-accent" to="/donate" onClick={closeMobileMenu}>
-              Support EUTR
+              Support EUR
             </Link>
           </div>
         </div>

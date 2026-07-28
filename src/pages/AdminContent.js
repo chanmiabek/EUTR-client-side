@@ -17,7 +17,7 @@ const initialVideoForm = { title: "", description: "", youtube_url: "", video_ur
 const defaultOverviewVideo = {
   title: "Event Overview",
   description: "Watch our event overview on YouTube.",
-  youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  youtube_url: "",
   video_url: "",
   videoFile: null
 };
@@ -383,13 +383,13 @@ function AdminContent() {
 
   return (
     <div className="admin-dashboard-page">
-      <PageHero
+       <PageHero
         eyebrow="Admin"
         title="Organisational administration dashboard."
         copy="Maintain public content, media, partners, team profiles, and impact stories from one controlled workspace."
         backgroundImage={heroImage}
-        backgroundAlt="Admin dashboard hero"
-      >
+        backgroundAlt="Admin dashboard hero" >
+      
         <h5 className="mb-3">Admin dashboard</h5>
         <p className="text-muted mb-3">Signed in as {session?.user?.email || "admin"}.</p>
         <button className="btn btn-outline-light btn-sm" type="button" onClick={handleLogout}>

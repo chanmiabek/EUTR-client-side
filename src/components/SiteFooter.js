@@ -39,9 +39,10 @@ function SiteFooter() {
             <h6 className="text-uppercase text-muted">Get Involved</h6>
             <ul className="list-unstyled">
               <li className="mb-2"><Link className="footer-link" to="/volunteer">Volunteer</Link></li>
-              <li className="mb-2"><Link className="footer-link" to="/join-us">Work with EUTR</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="/join-us">Work with EUR</Link></li>
               <li className="mb-2"><Link className="footer-link" to="/events">Events</Link></li>
               <li className="mb-2"><Link className="footer-link" to="/donate">Donate</Link></li>
+              <li className="mb-2"><Link className="footer-link" to="./Admin/login">Admin Tools</Link></li>
             </ul>
           </div>
           <div className="col-6 col-lg-2">

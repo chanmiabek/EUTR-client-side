@@ -509,7 +509,7 @@ function Home() {
           <div className="row gy-4">
             {[
               {
-                title: "Partner with EUTR",
+                title: "Partner with EUR",
                 copy: "Bring resources, expertise, and shared vision."
               },
               {
@@ -540,7 +540,7 @@ function Home() {
           <div className="newsletter section-reveal">
             <div className="row align-items-center gy-3">
               <div className="col-lg-7">
-                <h3>Stay connected to Educate Us To Rise.</h3>
+                <h3>Stay connected to Educate Us to Rise.</h3>
                 <p className="text-muted">
                   Monthly updates, volunteer opportunities, and impact reports.
                 </p>
