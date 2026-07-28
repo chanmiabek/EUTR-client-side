@@ -22,8 +22,7 @@ import AdminLogin from "./pages/AdminLogin";
 function App() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
-  const isDonateRoute = location.pathname === "/donate" || location.pathname === "/donate/status";
-  const showSiteChrome = !isAdminRoute && !isDonateRoute;
+  const showSiteChrome = !isAdminRoute;
   const showAdminNavbar = isAdminRoute;
 
   return (
