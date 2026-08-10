@@ -11,7 +11,7 @@ import {
 } from "../utils/api";
 import { readStoredSession, writeStoredSession } from "../utils/adminSession";
 
-const initialTeamForm = { name: "", role: "", copy: "", image: "", imageFile: null };
+const initialTeamForm = { name: "", role: "", gender: "", linkedin: "", copy: "", image: "", imageFile: null };
 const initialTestimonialForm = { name: "", role: "", quote: "", image: "", imageFile: null };
 const initialVideoForm = { title: "", description: "", youtube_url: "", video_url: "", videoFile: null };
 const defaultOverviewVideo = {
@@ -228,6 +228,12 @@ function AdminContent() {
     loadContent();
   }, [loadContent]);
 
+  useEffect(() => {
+    const refresh = () => loadContent();
+    window.addEventListener("eutr:data-changed", refresh);
+    return () => window.removeEventListener("eutr:data-changed", refresh);
+  }, [loadContent]);
+
   const toLines = (value) => (Array.isArray(value) ? value.join("\n") : String(value || ""));
 
   const storeSession = (nextSession) => {
@@ -392,14 +398,19 @@ function AdminContent() {
       
         <h5 className="mb-3">Admin dashboard</h5>
         <p className="text-muted mb-3">Signed in as {session?.user?.email || "admin"}.</p>
-        <button className="btn btn-outline-light btn-sm" type="button" onClick={handleLogout}>
-          Logout
-        </button>
+        <div className="d-flex gap-2 flex-wrap">
+          <a className="btn btn-outline-light btn-sm" href="/">
+            View website
+          </a>
+          <button className="btn btn-outline-light btn-sm" type="button" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
       </PageHero>
 
       <section className="section section-tight">
         <div className="container">
-          <div className="admin-command-center mb-4">
+          <div className="admin-command-center admin-sidebar-layout mb-4">
             <div>
               <div className="admin-eyebrow">Workspace</div>
               <h3 className="mb-1">{session?.user?.name || "Content operations"}</h3>
@@ -408,11 +419,11 @@ function AdminContent() {
                 {session?.expiresAt ? ` Session ends at ${new Date(session.expiresAt).toLocaleTimeString()}.` : ""}
               </p>
             </div>
-            <div className="admin-quick-nav" aria-label="Admin sections">
+            <nav className="admin-sidebar" aria-label="Admin sections">
               {dashboardSections.map((item) => (
-                <a className="admin-quick-link" href={item.href} key={item.href}>{item.label}</a>
+                <a className="admin-sidebar-link" href={item.href} key={item.href}>{item.label}</a>
               ))}
-            </div>
+            </nav>
           </div>
 
           {status.message && (
@@ -622,6 +633,8 @@ function AdminContent() {
                 <form onSubmit={handleTeamSubmit}>
                   <div className="mb-3"><label className="form-label">Name</label><input className="form-control" value={teamForm.name} onChange={(event) => setTeamForm((prev) => ({ ...prev, name: event.target.value }))} /></div>
                   <div className="mb-3"><label className="form-label">Role</label><input className="form-control" value={teamForm.role} onChange={(event) => setTeamForm((prev) => ({ ...prev, role: event.target.value }))} /></div>
+                  <div className="mb-3"><label className="form-label">Avatar gender</label><select className="form-select" value={teamForm.gender} onChange={(event) => setTeamForm((prev) => ({ ...prev, gender: event.target.value }))}><option value="">Neutral avatar</option><option value="female">Female avatar</option><option value="male">Male avatar</option></select></div>
+                  <div className="mb-3"><label className="form-label">LinkedIn profile</label><input className="form-control" type="url" value={teamForm.linkedin} onChange={(event) => setTeamForm((prev) => ({ ...prev, linkedin: event.target.value }))} placeholder="https://www.linkedin.com/in/..." /></div>
                   <div className="mb-3"><label className="form-label">Bio</label><textarea className="form-control" rows="4" value={teamForm.copy} onChange={(event) => setTeamForm((prev) => ({ ...prev, copy: event.target.value }))} /></div>
                   <AssetField
                     label="Team profile image"
@@ -654,7 +667,7 @@ function AdminContent() {
                         <small className="text-muted">{resolveImageAsset(member) ? "Profile image attached" : "No profile image yet"}</small>
                       </div>
                       <div className="d-flex gap-2">
-                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setTeamEditingId(member.id); setTeamForm({ name: member.name || "", role: member.role || "", copy: member.copy || "", image: resolveImageAsset(member), imageFile: null }); }}>Edit</button>
+                        <button className="btn btn-outline-light btn-sm" type="button" onClick={() => { setTeamEditingId(member.id); setTeamForm({ name: member.name || "", role: member.role || "", gender: member.gender || "", linkedin: member.linkedin || "", copy: member.copy || "", image: resolveImageAsset(member), imageFile: null }); }}>Edit</button>
                         <button className="btn btn-outline-light btn-sm" type="button" onClick={() => handleDelete(`/api/admin/team/${member.id}`, "Team member deleted.")}>Delete</button>
                       </div>
                     </div>

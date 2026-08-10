@@ -115,6 +115,10 @@ const resolveImage = (value) => {
   if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
     return value;
   }
+  // Legacy seed records used paths that are not served by the API. Use the
+  // bundled fallback portrait instead until an admin replaces the image with
+  // a Cloudinary URL.
+  if (value.startsWith("/images/")) return "";
   if (value.startsWith("/data/uploads/")) return getApiUrl(value);
   if (value.startsWith("/")) return value;
   return `/${value}`;
@@ -130,8 +134,29 @@ const teamImages = [
   teamImage7
 ];
 
+function HumanAvatar({ gender }) {
+  return (
+    <svg className="human-avatar-svg" viewBox="0 0 120 160" role="img" aria-label={`${gender || "neutral"} profile avatar`}>
+      <circle className="human-avatar-head" cx="60" cy="42" r="25" />
+      {gender === "female" && <path className="human-avatar-hair" d="M35 43c1-27 48-35 51 1v24H77V48c-12 8-26 8-40 0v20H35V43z" />}
+      {gender === "male" && <path className="human-avatar-hair" d="M36 39c3-28 46-31 49 1-12-8-27-10-49-1z" />}
+      <path className="human-avatar-body" d="M18 151c2-35 18-53 42-53s40 18 42 53H18z" />
+    </svg>
+  );
+}
+
+const getInitials = (name) => String(name || "User")
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0].toUpperCase())
+  .join("");
+
+const getAvatarFigure = (gender) => gender === "female" ? "👩" : gender === "male" ? "👨" : "🧑";
+
 function About() {
   const [team, setTeam] = useState(fallbackTeam);
+  const [expandedMembers, setExpandedMembers] = useState({});
   const [teamLoading, setTeamLoading] = useState(true);
   const [testimonials, setTestimonials] = useState(fallbackTestimonials);
   const [testimonialsLoading, setTestimonialsLoading] = useState(true);
@@ -470,21 +495,32 @@ function About() {
             {team.map((member, index) => (
               <div className="col-md-6 col-lg-4" key={member.name}>
                 <div className="team-card">
-                  <img
-                    className="team-photo"
-                    src={
+                  {(() => {
+                    const image =
                       resolveImage(member?.image) ||
                       resolveImage(member?.photo) ||
-                      resolveImage(member?.avatar) ||
-                      teamImages[index % teamImages.length]
-                    }
-                    alt={member.name}
-                  />
+                      resolveImage(member?.avatar);
+                    return image ? (
+                      <img className="team-photo" src={image} alt={member.name} />
+                    ) : (
+                      <div className={`team-photo team-avatar team-avatar-${member.gender || "neutral"}`} aria-label={`${member.name} avatar`}>
+                        <HumanAvatar gender={member.gender} />
+                      </div>
+                    );
+                  })()}
                   <div className="team-card-body">
                     <div className="team-card-kicker">Team member</div>
                     <h5 className="mb-1">{member.name}</h5>
                     <div className="text-muted mb-2">{member.role}</div>
-                    <p className="text-muted mb-0">{member.copy || member.bio || member.description}</p>
+                    <p className={`text-muted team-bio ${expandedMembers[member.name] ? "team-bio-expanded" : ""}`}>
+                      {member.copy || member.bio || member.description}
+                    </p>
+                    {(member.copy || member.bio || member.description || "").length > 150 && (
+                      <button className="team-more-button" type="button" onClick={() => setExpandedMembers((current) => ({ ...current, [member.name]: !current[member.name] }))}>
+                        {expandedMembers[member.name] ? "Less" : "More"}
+                      </button>
+                    )}
+                    {member.linkedin && <a className="team-linkedin" href={member.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>}
                   </div>
                 </div>
               </div>

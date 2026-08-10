@@ -8,7 +8,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Donate from "./pages/Donate";
-import DonationStatus from "./pages/DonationStatus";
 import WorkWithEurt from "./pages/WorkWithEurt";
 import Volunteer from "./pages/Volunteer";
 import JoinUs from "./pages/JoinUs";
@@ -18,6 +17,7 @@ import Projects from "./pages/Projects";
 import Events from "./pages/Events";
 import AdminContent from "./pages/AdminContent";
 import AdminLogin from "./pages/AdminLogin";
+import RealtimeBridge from "./components/RealtimeBridge";
 
 function App() {
   const location = useLocation();
@@ -27,13 +27,13 @@ function App() {
 
   return (
     <div className="app">
+      <RealtimeBridge />
       {showAdminNavbar ? <AdminNavbar /> : showSiteChrome ? <SiteNavbar /> : null}
       <main className={showSiteChrome || showAdminNavbar ? "" : "main-without-chrome"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/donate" element={<Donate />} />
-          <Route path="/donate/status" element={<DonationStatus />} />
           <Route path="/work-with-eurt" element={<WorkWithEurt />} />
           <Route path="/volunteer" element={<Volunteer />} />
           <Route path="/join-us" element={<JoinUs />} />

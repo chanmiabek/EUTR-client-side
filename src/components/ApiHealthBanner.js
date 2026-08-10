@@ -12,7 +12,7 @@ function ApiHealthBanner() {
     const start = Date.now();
 
     try {
-      const response = await fetch(getApiUrl("/api/payment-section/"), {
+      const response = await fetch(getApiUrl("/api/health/"), {
         method: "GET",
       });
 
