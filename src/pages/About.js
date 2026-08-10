@@ -20,43 +20,43 @@ const fallbackTeam = [
     role: "Founder and Executive Director",
     initials: "MM",
     copy: "Leads the vision for early learning, equity, and community care."
-  },
-  {
-    name: "Maggiso L.",
-    role: "Programs Coordinator",
-    initials: "ML",
-    copy: "Coordinates learning circles and family engagement."
-  },
-  {
-    name: "Linet Achieng",
-    role: "Education Lead",
-    initials: "LA",
-    copy: "Strengthens foundational learning and teacher support."
-  },
-  {
-    name: "Joseph Wanjala",
-    role: "Community Partnerships",
-    initials: "JW",
-    copy: "Builds partnerships with schools and local leaders."
-  },
-  {
-    name: "Rose Atieno",
-    role: "Women in Enterprise",
-    initials: "RA",
-    copy: "Guides arts and crafts training for women-led households."
-  },
-  {
-    name: "Peter Lomo",
-    role: "Protection Officer",
-    initials: "PL",
-    copy: "Leads child protection, safeguarding, and referrals."
-  },
-  {
-    name: "Grace Njeri",
-    role: "Monitoring and Learning",
-    initials: "GN",
-    copy: "Tracks impact and shares evidence for better programs."
   }
+  // {
+  //   name: "Maggiso L.",
+  //   role: "Programs Coordinator",
+  //   initials: "ML",
+  //   copy: "Coordinates learning circles and family engagement."
+  // },
+  // {
+  //   name: "Linet Achieng",
+  //   role: "Education Lead",
+  //   initials: "LA",
+  //   copy: "Strengthens foundational learning and teacher support."
+  // },
+  // {
+  //   name: "Joseph Wanjala",
+  //   role: "Community Partnerships",
+  //   initials: "JW",
+  //   copy: "Builds partnerships with schools and local leaders."
+  // },
+  // {
+  //   name: "Rose Atieno",
+  //   role: "Women in Enterprise",
+  //   initials: "RA",
+  //   copy: "Guides arts and crafts training for women-led households."
+  // },
+  // {
+  //   name: "Peter Lomo",
+  //   role: "Protection Officer",
+  //   initials: "PL",
+  //   copy: "Leads child protection, safeguarding, and referrals."
+  // },
+  // {
+  //   name: "Grace Njeri",
+  //   role: "Monitoring and Learning",
+  //   initials: "GN",
+  //   copy: "Tracks impact and shares evidence for better programs."
+  // }
 ];
 
 const fallbackPartners = [
