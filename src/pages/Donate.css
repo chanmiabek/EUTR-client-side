@@ -626,6 +626,14 @@
   padding: 2rem;
 }
 
+.donorbox-iframe {
+  display: block;
+  width: 100%;
+  min-height: 720px;
+  border: 0;
+  background: transparent;
+}
+
 .donorbox-card h2 {
   margin-bottom: 0.5rem;
 }

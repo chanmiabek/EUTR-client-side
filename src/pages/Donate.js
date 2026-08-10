@@ -1,25 +1,8 @@
-import { useEffect } from "react";
 import PageHero from "../components/PageHero";
 import heroImage from "../assets/hero.jpeg";
 import "../pages/Donate.css";
 
 function Donate() {
-  useEffect(() => {
-    const scriptId = "donorbox-widget-script";
-    if (document.getElementById(scriptId)) return undefined;
-
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.src = "https://donorbox.org/widgets.js";
-    script.type = "module";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
-  }, []);
-
   return (
     <div className="app">
       <PageHero
@@ -39,11 +22,14 @@ function Donate() {
             <p className="text-muted mb-4">
               Choose an amount and complete your donation securely through Donorbox.
             </p>
-            <dbox-widget
-              campaign="donate-here-to-support-the-vulnerable-in-the-communities"
-              type="donation_form"
-              enable-auto-scroll="true"
-            ></dbox-widget>
+            <iframe
+              className="donorbox-iframe"
+              title="Donation form"
+              src="https://donorbox.org/embed/donate-here-to-support-the-vulnerable-in-the-communities"
+              frameBorder="0"
+              scrolling="no"
+              allow="payment"
+            />
           </div>
         </div>
       </section>
