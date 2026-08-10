@@ -145,15 +145,6 @@ function HumanAvatar({ gender }) {
   );
 }
 
-const getInitials = (name) => String(name || "User")
-  .split(/\s+/)
-  .filter(Boolean)
-  .slice(0, 2)
-  .map((part) => part[0].toUpperCase())
-  .join("");
-
-const getAvatarFigure = (gender) => gender === "female" ? "👩" : gender === "male" ? "👨" : "🧑";
-
 function About() {
   const [team, setTeam] = useState(fallbackTeam);
   const [expandedMembers, setExpandedMembers] = useState({});
