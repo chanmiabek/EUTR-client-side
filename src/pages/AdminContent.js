@@ -251,11 +251,6 @@ function AdminContent() {
     return () => window.clearTimeout(timeout);
   }, [session]);
 
-  const handleLogout = () => {
-    storeSession(null);
-    setStatus({ type: "success", message: "Logged out successfully." });
-  };
-
   const saveRequest = async (requestPromise, successMessage, resetter) => {
     try {
       const response = await requestPromise;
