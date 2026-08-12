@@ -115,11 +115,6 @@ const resolveImage = (value) => {
   if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
     return value;
   }
-  // Legacy seed records used paths that are not served by the API. Use the
-  // bundled fallback portrait instead until an admin replaces the image with
-  // a Cloudinary URL.
-  if (value.startsWith("/images/")) return "";
-  if (value.startsWith("/data/uploads/")) return getApiUrl(value);
   if (value.startsWith("/")) return value;
   return `/${value}`;
 };
@@ -524,6 +519,3 @@ function About() {
 }
 
 export default About;
-
-
-
