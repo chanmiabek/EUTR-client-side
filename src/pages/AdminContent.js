@@ -451,7 +451,7 @@ function AdminContent() {
                     urlLabel="Image URL fallback"
                     urlValue={programForm.image}
                     onUrlChange={(event) => setProgramForm((prev) => ({ ...prev, image: event.target.value }))}
-                    onFileChange={(event) => setProgramForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    onFileChange={(event) => setProgramForm((prev) => ({ ...prev, image: "", imageFile: event.target.files?.[0] || null }))}
                     placeholder="https://example.com/program.jpg"
                   />
                   <div className="mb-3"><label className="form-label">Highlights</label><textarea className="form-control" rows="4" value={programForm.highlights} onChange={(event) => setProgramForm((prev) => ({ ...prev, highlights: event.target.value }))} placeholder="One per line" /></div>
@@ -511,7 +511,7 @@ function AdminContent() {
                     urlLabel="Image URL fallback"
                     urlValue={eventForm.image}
                     onUrlChange={(event) => setEventForm((prev) => ({ ...prev, image: event.target.value }))}
-                    onFileChange={(event) => setEventForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    onFileChange={(event) => setEventForm((prev) => ({ ...prev, image: "", imageFile: event.target.files?.[0] || null }))}
                     placeholder="https://example.com/event.jpg"
                   />
                   <div className="mb-3"><label className="form-label">Highlights</label><textarea className="form-control" rows="4" value={eventForm.highlights} onChange={(event) => setEventForm((prev) => ({ ...prev, highlights: event.target.value }))} placeholder="One per line" /></div>
@@ -568,7 +568,7 @@ function AdminContent() {
                     urlLabel="Logo URL fallback"
                     urlValue={partnerForm.logo_url}
                     onUrlChange={(event) => setPartnerForm((prev) => ({ ...prev, logo_url: event.target.value }))}
-                    onFileChange={(event) => setPartnerForm((prev) => ({ ...prev, logoFile: event.target.files?.[0] || null }))}
+                    onFileChange={(event) => setPartnerForm((prev) => ({ ...prev, logo_url: "", logoFile: event.target.files?.[0] || null }))}
                     placeholder="https://example.com/logo.png"
                   />
                   <div className="d-flex gap-2 flex-wrap">
@@ -626,7 +626,7 @@ function AdminContent() {
                     urlLabel="Image URL fallback"
                     urlValue={teamForm.image}
                     onUrlChange={(event) => setTeamForm((prev) => ({ ...prev, image: event.target.value }))}
-                    onFileChange={(event) => setTeamForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    onFileChange={(event) => setTeamForm((prev) => ({ ...prev, image: "", imageFile: event.target.files?.[0] || null }))}
                     placeholder="https://example.com/profile.jpg"
                   />
                   <div className="d-flex gap-2 flex-wrap">
@@ -683,7 +683,7 @@ function AdminContent() {
                     urlLabel="Image URL fallback"
                     urlValue={testimonialForm.image}
                     onUrlChange={(event) => setTestimonialForm((prev) => ({ ...prev, image: event.target.value }))}
-                    onFileChange={(event) => setTestimonialForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
+                    onFileChange={(event) => setTestimonialForm((prev) => ({ ...prev, image: "", imageFile: event.target.files?.[0] || null }))}
                     placeholder="https://example.com/testimonial.jpg"
                   />
                   <div className="d-flex gap-2 flex-wrap">
