@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import PageHero from "../components/PageHero";
-import heroImage from "../assets/hero.jpeg";
 import {
   deleteJson,
   getApiUrl,
@@ -164,6 +162,7 @@ function AdminContent() {
   const [testimonialEditingId, setTestimonialEditingId] = useState("");
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const adminHeaders = session?.token ? { Authorization: `Bearer ${session.token}` } : {};
   const setMessage = (type, message) => setStatus({ type, message });
@@ -389,29 +388,11 @@ function AdminContent() {
 
   return (
     <div className="admin-dashboard-page">
-       <PageHero
-        eyebrow="Admin"
-        title="Organisational administration dashboard."
-        copy="Maintain public content, media, partners, team profiles, and impact stories from one controlled workspace."
-        backgroundImage={heroImage}
-        backgroundAlt="Admin dashboard hero" >
-      
-        <h5 className="mb-3">Admin dashboard</h5>
-        <p className="text-muted mb-3">Signed in as {session?.user?.email || "admin"}.</p>
-        <div className="d-flex gap-2 flex-wrap">
-          <a className="btn btn-outline-light btn-sm" href="/">
-            View website
-          </a>
-          <button className="btn btn-outline-light btn-sm" type="button" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </PageHero>
-
       <section className="section section-tight">
-        <div className="container">
-          <div className="admin-command-center admin-sidebar-layout mb-4">
+        <div className={`container admin-page-container ${sidebarOpen ? "admin-sidebar-is-open" : "admin-sidebar-is-closed"}`}>
+          <aside className="admin-command-center admin-sidebar-layout mb-4" aria-label="Admin workspace navigation">
             <div>
+              <button className="admin-sidebar-close" type="button" onClick={() => setSidebarOpen(false)} aria-label="Close admin sidebar">×</button>
               <div className="admin-eyebrow">Workspace</div>
               <h3 className="mb-1">{session?.user?.name || "Content operations"}</h3>
               <p className="text-muted mb-0">
@@ -424,7 +405,8 @@ function AdminContent() {
                 <a className="admin-sidebar-link" href={item.href} key={item.href}>{item.label}</a>
               ))}
             </nav>
-          </div>
+          </aside>
+          {!sidebarOpen && <button className="admin-sidebar-toggle" type="button" onClick={() => setSidebarOpen(true)}>☰ <span>Menu</span></button>}
 
           {status.message && (
             <div className={`admin-status admin-status-${status.type || "info"} mb-4`}>
