@@ -863,10 +863,16 @@ main {
 }
 
 .admin-navbar {
-  background: linear-gradient(135deg, #06213f, #0a4f7a);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 14px 34px rgba(0, 24, 46, 0.28);
-  min-height: 78px;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 72, 128, 0.12);
+  box-shadow: 0 10px 28px rgba(0, 41, 77, 0.1);
+  min-height: 68px;
+}
+
+.admin-navbar-inner {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
 }
 
 .admin-navbar-brand {
@@ -877,21 +883,23 @@ main {
 }
 
 .admin-navbar-brand img {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(0, 72, 128, 0.24);
 }
 
 .admin-navbar-title {
-  color: #ffffff;
+  color: var(--ink);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0;
+  line-height: 1.1;
 }
 
 .admin-navbar-subtitle {
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 .navbar-brand img {
@@ -1598,6 +1606,7 @@ main {
   background:
     linear-gradient(180deg, rgba(245, 248, 252, 0.9), rgba(255, 255, 255, 1) 38%),
     #ffffff;
+  min-height: 100vh;
 }
 
 .admin-command-center {
@@ -1623,13 +1632,14 @@ main {
 .admin-command-center.admin-sidebar-layout {
   position: fixed;
   z-index: 20;
-  top: 1rem;
+  top: 84px;
   left: 1rem;
   display: block;
   width: 220px;
-  min-height: calc(100vh - 2rem);
+  min-height: calc(100vh - 100px);
   margin: 0 !important;
   padding: 1.25rem;
+  overflow-y: auto;
 }
 
 .admin-sidebar-close,
@@ -1645,16 +1655,37 @@ main {
   float: right;
   width: 30px;
   height: 30px;
-  font-size: 1.3rem;
+  font-size: 0;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-sidebar-close::before {
+  content: "\00d7";
+  font-size: 1.3rem;
 }
 
 .admin-sidebar-toggle {
   position: fixed;
   z-index: 21;
-  top: 1rem;
+  top: 84px;
   left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   padding: 0.65rem 0.85rem;
+  font-size: 0;
+}
+
+.admin-sidebar-toggle::before {
+  content: "\2630";
+  font-size: 1rem;
+}
+
+.admin-sidebar-toggle span {
+  font-size: 0.95rem;
 }
 
 .admin-eyebrow {
@@ -1727,7 +1758,7 @@ main {
 
 @media (max-width: 768px) {
   .admin-sidebar-is-open {
-    padding-left: 1rem;
+    padding-left: 0;
   }
 
   .admin-command-center.admin-sidebar-layout {
