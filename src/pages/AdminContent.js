@@ -41,6 +41,7 @@ const initialEventForm = {
 };
 const initialPartnerForm = { name: "", link: "", logo_url: "", logoFile: null };
 const MAX_VIDEO_UPLOAD_BYTES = 500 * 1024 * 1024;
+const PUBLIC_SITE_PATH = "/";
 
 const resolveImageAsset = (item) => item?.image || item?.photo || item?.avatar || "";
 const resolvePartnerAsset = (item) => item?.logo_url || item?.logo || item?.image || "";
@@ -242,6 +243,10 @@ function AdminContent() {
     writeStoredSession(nextSession);
   };
 
+  const handleLogout = () => {
+    storeSession(null);
+  };
+
   useEffect(() => {
     if (!session?.expiresAt) return undefined;
 
@@ -402,6 +407,14 @@ function AdminContent() {
                 <a className="admin-sidebar-link" href={item.href} key={item.href}>{item.label}</a>
               ))}
             </nav>
+            <div className="admin-sidebar-actions">
+              <a className="admin-sidebar-action admin-sidebar-action-secondary" href={PUBLIC_SITE_PATH}>
+                View website
+              </a>
+              <button className="admin-sidebar-action admin-sidebar-action-danger" type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
           </aside>
           {!sidebarOpen && <button className="admin-sidebar-toggle" type="button" onClick={() => setSidebarOpen(true)}>☰ <span>Menu</span></button>}
 
