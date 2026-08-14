@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getApiUrl } from "../utils/api";
+import { resolveItemImage, resolveMediaUrl } from "../utils/media";
 import aboutImage from "../assets/about.jpeg";
 import gallery1 from "../assets/gallery-1.jpeg";
 import gallery2 from "../assets/gallery-2.jpeg";
@@ -110,14 +111,7 @@ const normalizePartners = (data) => {
   return [];
 };
 
-const resolveImage = (value) => {
-  if (!value || typeof value !== "string") return "";
-  if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
-    return value;
-  }
-  if (value.startsWith("/")) return value;
-  return `/${value}`;
-};
+const resolveImage = resolveMediaUrl;
 
 const teamImages = [
   teamImage1,
@@ -193,7 +187,7 @@ function About() {
             normalized.map((item) => ({
               name: item?.name || "Partner",
               link: item?.link || "",
-              logo_url: resolveImage(item?.logo_url || item?.logo || item?.image),
+              logo_url: resolveItemImage(item, ["logo_url", "logo", "image"]),
               mark:
                 (item?.name || "PT")
                   .split(" ")
@@ -236,11 +230,7 @@ function About() {
             normalized.map((item, index) => ({
               name: item?.name || item?.full_name || "Community Member",
               role: item?.role || item?.title || "Community Voice",
-              image:
-                resolveImage(item?.image) ||
-                resolveImage(item?.photo) ||
-                resolveImage(item?.avatar) ||
-                teamImages[index % teamImages.length],
+              image: resolveItemImage(item) || teamImages[index % teamImages.length],
               quote: item?.quote || item?.message || item?.testimonial || ""
             }))
           );
@@ -482,10 +472,7 @@ function About() {
               <div className="col-md-6 col-lg-4" key={member.name}>
                 <div className="team-card">
                   {(() => {
-                    const image =
-                      resolveImage(member?.image) ||
-                      resolveImage(member?.photo) ||
-                      resolveImage(member?.avatar);
+                    const image = resolveItemImage(member);
                     return image ? (
                       <img className="team-photo" src={image} alt={member.name} />
                     ) : (

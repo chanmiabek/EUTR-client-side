@@ -8,6 +8,7 @@ import {
   readApiError
 } from "../utils/api";
 import { readStoredSession, writeStoredSession } from "../utils/adminSession";
+import { resolveItemImage } from "../utils/media";
 
 const initialTeamForm = { name: "", role: "", gender: "", linkedin: "", copy: "", image: "", imageFile: null };
 const initialTestimonialForm = { name: "", role: "", quote: "", image: "", imageFile: null };
@@ -43,8 +44,8 @@ const initialPartnerForm = { name: "", link: "", logo_url: "", logoFile: null };
 const MAX_VIDEO_UPLOAD_BYTES = 500 * 1024 * 1024;
 const PUBLIC_SITE_PATH = "/";
 
-const resolveImageAsset = (item) => item?.image || item?.photo || item?.avatar || "";
-const resolvePartnerAsset = (item) => item?.logo_url || item?.logo || item?.image || "";
+const resolveImageAsset = (item) => resolveItemImage(item);
+const resolvePartnerAsset = (item) => resolveItemImage(item, ["logo_url", "logo", "image"]);
 const extractYoutubeId = (value) => {
   const text = String(value || "").trim();
   return (

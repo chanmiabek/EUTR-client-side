@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getApiUrl } from "../utils/api";
+import { resolveItemImage } from "../utils/media";
 import { Link } from "react-router-dom";
 import programImage1 from "../assets/gallery-1.jpeg";
 import programImage2 from "../assets/gallery-2.jpeg";
@@ -48,15 +49,6 @@ const normalizePrograms = (data) => {
   return [];
 };
 
-const resolveImage = (value) => {
-  if (!value || typeof value !== "string") return "";
-  if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
-    return value;
-  }
-  if (value.startsWith("/")) return value;
-  return `/${value}`;
-};
-
 const fallbackImages = [programImage1, programImage2, programImage3];
 
 const toHighlights = (program) => {
@@ -82,11 +74,7 @@ const mapProgram = (program, index = 0) => ({
     program?.details ||
     "Program details coming soon.",
   highlights: toHighlights(program),
-  image:
-    resolveImage(program?.image) ||
-    resolveImage(program?.photo) ||
-    resolveImage(program?.cover_image) ||
-    fallbackImages[index % fallbackImages.length]
+  image: resolveItemImage(program) || fallbackImages[index % fallbackImages.length]
 });
 
 function Programs() {
@@ -158,7 +146,7 @@ function Programs() {
                     <div className="col-lg-6">
                       <img
                         className="program-feature-image"
-                        src={resolveImage(program.image) || fallbackImages[index % fallbackImages.length]}
+                        src={program.image || fallbackImages[index % fallbackImages.length]}
                         alt={program.title}
                       />
                     </div>

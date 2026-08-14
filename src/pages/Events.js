@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getApiUrl } from "../utils/api";
+import { resolveItemImage } from "../utils/media";
 import eventImage1 from "../assets/gallery-1.jpeg";
 import eventImage2 from "../assets/gallery-2.jpeg";
 import eventImage3 from "../assets/gallery-3.jpeg";
@@ -54,15 +55,6 @@ const normalizeEvents = (data) => {
   return [];
 };
 
-const resolveImage = (value) => {
-  if (!value || typeof value !== "string") return "";
-  if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:")) {
-    return value;
-  }
-  if (value.startsWith("/")) return value;
-  return `/${value}`;
-};
-
 const fallbackImages = [eventImage1, eventImage2, eventImage3];
 
 const toHighlights = (event) => {
@@ -86,11 +78,7 @@ const mapEvent = (event, index = 0) => ({
   description:
     event?.description || event?.copy || event?.details || "Event details coming soon.",
   highlights: toHighlights(event),
-  image:
-    resolveImage(event?.image) ||
-    resolveImage(event?.photo) ||
-    resolveImage(event?.cover_image) ||
-    fallbackImages[index % fallbackImages.length]
+  image: resolveItemImage(event) || fallbackImages[index % fallbackImages.length]
 });
 
 function Events() {
@@ -153,7 +141,7 @@ function Events() {
                     <div className="col-lg-6">
                       <img
                         className="event-feature-image"
-                        src={resolveImage(event.image) || fallbackImages[index % fallbackImages.length]}
+                        src={event.image || fallbackImages[index % fallbackImages.length]}
                         alt={event.title}
                       />
                     </div>
