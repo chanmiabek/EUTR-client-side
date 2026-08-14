@@ -1,4 +1,4 @@
-const rawBaseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
+const rawBaseUrl = process.env.REACT_APP_API_BASE_URL || "https://eur-backend-api.onrender.com";
 
 const sanitizeBaseUrl = (value) =>
   String(value || "")
