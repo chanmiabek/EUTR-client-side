@@ -1,21 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { getApiUrl } from "../utils/api";
+import PageHero from "../components/PageHero";
+import heroImage from "../assets/gallery-2.jpeg";
+import gallery1 from "../assets/gallery-1.jpeg";
+import gallery2 from "../assets/gallery-2.jpeg";
+import gallery3 from "../assets/gallery-3.jpeg";
+import { resolveItemImage } from "../utils/media";
 
 const fallbackProjects = [
   {
     title: "Community Learning Labs",
     tag: "Education",
-    copy: "After-school tutoring, digital literacy, and mentorship in safe learning spaces."
+    copy: "After-school tutoring, digital literacy, and mentorship in safe learning spaces.",
+    image: gallery1
   },
   {
     title: "Safe Homes Network",
     tag: "Protection",
-    copy: "Case support, family referrals, and child safeguarding follow-up."
+    copy: "Case support, family referrals, and child safeguarding follow-up.",
+    image: gallery2
   },
   {
     title: "Women in Enterprise",
     tag: "Livelihoods",
-    copy: "Business skills, savings circles, and market linkage support for caregivers."
+    copy: "Business skills, savings circles, and market linkage support for caregivers.",
+    image: gallery3
   }
 ];
 
@@ -40,10 +49,11 @@ function Projects() {
         const normalized = normalizeProjects(data);
         if (isMounted && normalized.length) {
           setProjects(
-            normalized.map((project) => ({
+            normalized.map((project, index) => ({
               title: project?.title || "Project",
               tag: project?.tag || project?.category || "Community",
-              copy: project?.copy || project?.description || "Project details coming soon."
+              copy: project?.copy || project?.description || "Project details coming soon.",
+              image: resolveItemImage(project) || [gallery1, gallery2, gallery3][index % 3]
             }))
           );
         }
@@ -64,8 +74,16 @@ function Projects() {
   }, []);
 
   return (
-    <section className="section section-tight">
-      <div className="container">
+    <div>
+      <PageHero
+        eyebrow="Projects"
+        title="Projects that turn shared goals into lasting change."
+        copy="Explore community-led work across education, protection, livelihoods, and empowerment."
+        backgroundImage={heroImage}
+        backgroundAlt="Children learning together in a classroom"
+      />
+      <section className="section section-tight">
+        <div className="container">
         <div className="section-title">Projects</div>
         <h1 className="section-heading">Current projects in motion.</h1>
         <p className="section-copy">
@@ -76,6 +94,11 @@ function Projects() {
           {projects.map((project, index) => (
             <div className="col-md-6" key={`${project.title}-${index}`}>
               <div className="project-card">
+                <img
+                  src={project.image || [gallery1, gallery2, gallery3][index % 3]}
+                  alt={project.title}
+                  style={{ width: "100%", height: "220px", objectFit: "cover", borderRadius: "18px", marginBottom: "1rem" }}
+                />
                 <div className="badge-pill mb-2">{project.tag}</div>
                 <h5>{project.title}</h5>
                 <p className="text-muted mb-0">{project.copy}</p>
@@ -83,8 +106,9 @@ function Projects() {
             </div>
           ))}
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </div>
   );
 }
 

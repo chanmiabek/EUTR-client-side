@@ -386,7 +386,7 @@ function AdminContent() {
   ];
 
   if (!session?.token) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   return (

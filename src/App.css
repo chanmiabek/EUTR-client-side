@@ -1051,6 +1051,16 @@ main {
   object-fit: cover;
 }
 
+.volunteer-testimonial-image {
+  width: 260px;
+  height: 300px;
+  min-height: 0;
+  display: block;
+  margin: 1.5rem auto;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
 .program-feature-content {
   padding: 2rem;
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import PageHero from "../components/PageHero";
-import heroImage from "../assets/hero.jpeg";
+import heroImage from "../assets/image-3.jpeg";
 import { getApiUrl } from "../utils/api";
 
 const STATUS_COPY = {

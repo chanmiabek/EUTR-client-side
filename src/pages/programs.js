@@ -2,38 +2,39 @@ import React, { useEffect, useState } from "react";
 import { getApiUrl } from "../utils/api";
 import { resolveItemImage } from "../utils/media";
 import { Link } from "react-router-dom";
-import programImage1 from "../assets/gallery-1.jpeg";
-import programImage2 from "../assets/gallery-2.jpeg";
+// import programImage1 from "../assets/gallery-1.jpeg";
+import Image2 from "../assets/image-2.jpeg";
 import programImage3 from "../assets/gallery-3.jpeg";
-import heroImage from "../assets/hero.jpeg";
+import image4 from "../assets/image-4.jpeg"
+import image5 from "../assets/image-5.jpeg"
 
 const fallbackPrograms = [
   {
-    title: "Early Learning Foundations",
-    focus: "School readiness",
-    description: "Play-based learning, literacy, and numeracy support for young learners.",
+    title: "Early Childhood Development",
+    focus: "Education",
+    description: "While educational services exist within the camp, many children continue to face barriers including overcrowded classrooms, limited learning resources, and inadequate nutritional support. EUR seeks to complement existing services by providing additional educational opportunities and supportive learning environments.",
     highlights: [
       "Foundational literacy and numeracy activities",
       "Safe and inclusive early childhood spaces",
       "Parent engagement for home learning"
     ],
-    image: programImage1
+    image: image4
   },
   {
-    title: "Education Retention and Policy",
-    focus: "Access and equity",
-    description: "Community advocacy and school retention support for vulnerable children.",
+    title: "Women Empowerment",
+    focus: "Livelihoods",
+    description: "Through practical vocational training, entrepreneurship development, and market linkages, women are supported to build sustainable livelihoods, strengthen economic independence, and reduce vulnerability to poverty and exploitation.",
     highlights: [
       "Back-to-school campaigns and follow-up",
       "Case support for at-risk learners",
       "Community policy dialogue on education access"
     ],
-    image: programImage2
+    image: image4
   },
   {
-    title: "Arts and Crafts Livelihoods",
-    focus: "Women-led enterprise",
-    description: "Skills training in crochet, beadwork, and design for income generation.",
+    title: "Gender-Based Violence Prevention",
+    focus: "Protection and empowerment",
+    description: "EUR recognizes that gender-based violence remains a significant challenge affecting women and girls in displacement settings. Through awareness raising, community dialogue, education, and empowerment initiatives, EUR works to promote safety, dignity, and resilience.",
     highlights: [
       "Practical craft and design training",
       "Market linkage and small business coaching",
@@ -49,7 +50,7 @@ const normalizePrograms = (data) => {
   return [];
 };
 
-const fallbackImages = [programImage1, programImage2, programImage3];
+const fallbackImages = [image4, image5, programImage3];
 
 const toHighlights = (program) => {
   if (Array.isArray(program?.highlights) && program.highlights.length) return program.highlights;
@@ -112,7 +113,7 @@ function Programs() {
   return (
     <div>
       <section className="hero page-image-hero">
-        <img className="hero-bg" src={heroImage} alt="Programs hero" />
+        <img className="hero-bg" src={Image2} alt="Children learning in a classroom" />
         <div className="container hero-content">
           <div className="row align-items-center gy-4">
             <div className="col-lg-8 section-reveal">

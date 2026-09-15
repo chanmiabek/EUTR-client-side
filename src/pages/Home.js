@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { getApiUrl } from "../utils/api";
-import hero from "../assets/hero.jpeg";
 import gallery1 from "../assets/gallery-1.jpeg";
 import gallery2 from "../assets/gallery-2.jpeg";
 import gallery3 from "../assets/gallery-3.jpeg";
@@ -9,26 +8,26 @@ import { Link } from "react-router-dom";
 
 const fallbackPrograms = [
   {
-    title: "Early Learning Foundations",
+    title: "Early Childhood Development",
     copy:
-      "We nurture children from age three and up with strong early childhood education, giving them the skills and confidence they need before primary school.",
-    focus: "School readiness",
+      "While educational services exist within the camp, many children continue to face barriers including overcrowded classrooms, limited learning resources, and inadequate nutritional support. EUR provides additional educational opportunities and supportive learning environments.",
+    focus: "Education",
     status: "Active",
     beneficiaries: "Children ages 3+"
   },
   {
-    title: "Education Retention and Policy",
+    title: "Women Empowerment",
     copy:
-      "We champion policies that keep children in school and rebuild foundational learning programs so every child stays on the path to success.",
-    focus: "Access and equity",
+      "Through practical vocational training, entrepreneurship development, and market linkages, women build sustainable livelihoods, strengthen economic independence, and reduce vulnerability to poverty and exploitation.",
+    focus: "Livelihoods",
     status: "Active",
     beneficiaries: "Learners at risk of dropping out"
   },
   {
-    title: "Arts and Crafts Livelihoods",
+    title: "Gender-Based Violence Prevention",
     copy:
-      "In Kakuma Refugee Camp, we empower women through design, crochet, and beadwork training that creates income and restores dignity.",
-    focus: "Women-led enterprise",
+      "Through awareness raising, community dialogue, education, and empowerment initiatives, EUR addresses gender-based violence affecting women and girls in displacement settings.",
+    focus: "Protection and empowerment",
     status: "Open enrollment",
     beneficiaries: "Women-led households"
   }
@@ -161,7 +160,7 @@ function Home() {
   return (
     <div>
       <section className="hero">
-        <img className="hero-bg" src={hero} alt="Community gathering" />
+        <img className="hero-bg" src={gallery2} alt="Children learning together" />
         <div className="container hero-content">
           <div className="row align-items-center gy-4">
             <div className="col-lg-7 section-reveal">
@@ -219,13 +218,13 @@ function Home() {
             <div className="col-lg-6 section-reveal">
               <div className="section-title">Our Mission</div>
               <h2 className="section-heading">
-                Strong foundations for every child.
+                Empowering communities through education and opportunity.
               </h2>
               <p className="section-copy">
-                Educate Us To Rise prepares children before primary school and
-                advocates for policies that keep every child in class. We build
-                safe learning spaces, strengthen foundational skills, and
-                cultivate unity and mutual respect.
+                To empower refugee communities through education, skills
+                development, peacebuilding, women&apos;s empowerment, and
+                community-led initiatives that promote resilience and
+                self-reliance.
               </p>
               <div className="d-flex flex-wrap gap-3 mt-4">
                 <div className="icon-circle">01</div>
@@ -258,7 +257,7 @@ function Home() {
             <div className="col-lg-6 section-reveal delay-1">
               <div className="image-stack">
                 <img src={gallery1} alt="Learning circle" />
-                <img src={gallery2} alt="Community celebration" />
+                <img src={gallery3} alt="Children learning together" />
               </div>
             </div>
           </div>
@@ -402,7 +401,7 @@ function Home() {
             </div>
             <div className="col-lg-6 section-reveal delay-1">
               <img
-                src={gallery1}
+                src={gallery2}
                 alt="Learning program"
                 className="program-hero"
               />

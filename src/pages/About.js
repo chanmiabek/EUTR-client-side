@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { getApiUrl } from "../utils/api";
 import { resolveItemImage, resolveMediaUrl } from "../utils/media";
-import aboutImage from "../assets/about.jpeg";
 import gallery1 from "../assets/gallery-1.jpeg";
-import gallery2 from "../assets/gallery-2.jpeg";
+// import gallery2 from "../assets/gallery-2.jpeg";
+// import gallery3 from "../assets/gallery-3.jpeg";
+import Image1 from "../assets/Image-1.jpeg";
+import image2 from "../assets/Image-1.jpeg";
+import image3 from "../assets/Image-1.jpeg";
 import testimonial1 from "../assets/M A Malony.jpeg";
 import testimonial2 from "../assets/secretary.jpeg";
 import testimonial3 from "../assets/WhatsApp Image 2026-02-16 at 14.46.15.jpeg";
@@ -22,42 +25,7 @@ const fallbackTeam = [
     initials: "MM",
     copy: "Leads the vision for early learning, equity, and community care."
   }
-  // {
-  //   name: "Maggiso L.",
-  //   role: "Programs Coordinator",
-  //   initials: "ML",
-  //   copy: "Coordinates learning circles and family engagement."
-  // },
-  // {
-  //   name: "Linet Achieng",
-  //   role: "Education Lead",
-  //   initials: "LA",
-  //   copy: "Strengthens foundational learning and teacher support."
-  // },
-  // {
-  //   name: "Joseph Wanjala",
-  //   role: "Community Partnerships",
-  //   initials: "JW",
-  //   copy: "Builds partnerships with schools and local leaders."
-  // },
-  // {
-  //   name: "Rose Atieno",
-  //   role: "Women in Enterprise",
-  //   initials: "RA",
-  //   copy: "Guides arts and crafts training for women-led households."
-  // },
-  // {
-  //   name: "Peter Lomo",
-  //   role: "Protection Officer",
-  //   initials: "PL",
-  //   copy: "Leads child protection, safeguarding, and referrals."
-  // },
-  // {
-  //   name: "Grace Njeri",
-  //   role: "Monitoring and Learning",
-  //   initials: "GN",
-  //   copy: "Tracks impact and shares evidence for better programs."
-  // }
+ 
 ];
 
 const fallbackPartners = [
@@ -256,7 +224,7 @@ function About() {
   return (
     <div>
       <section className="hero about-hero">
-        <img className="hero-bg" src={aboutImage} alt="EUTR community" />
+        <img className="hero-bg" src={image2} alt="EUTR children learning together" />
         <div className="container hero-content">
           <div className="row align-items-center gy-4">
             <div className="col-lg-7 section-reveal">
@@ -285,8 +253,8 @@ function About() {
           <div className="row align-items-center gy-4">
             <div className="col-lg-6">
               <img
-                src={gallery2}
-                alt="Community leaders"
+                src={image3}
+                alt="Teacher guiding children in a classroom"
                 style={{ borderRadius: "28px", border: "1px solid var(--border)" }}
               />
             </div>
@@ -294,7 +262,7 @@ function About() {
               <div className="section-title">Our Story</div>
               <h2 className="section-heading">Born from a passion for change.</h2>
               <p className="section-copy">
-                Educate Us To Rise grew out of the challenges we witnessed every
+                Educate Us to Rise grew out of the challenges we witnessed every
                 day: overcrowded classrooms, limited learning materials, and
                 declining performance. We chose to act, building strong
                 foundations before children enter primary school.
@@ -309,6 +277,24 @@ function About() {
         </div>
       </section>
 
+      <section className="section section-tight" aria-label="Children learning in the classroom">
+        <div className="container">
+          <div className="section-title">Learning in action</div>
+          <h2 className="section-heading mb-4">Real classrooms. Real opportunity.</h2>
+          <div className="row gy-4">
+            {[Image1, image2, image3].map((image, index) => (
+              <div className="col-md-4" key={image}>
+                <img
+                  src={image3}
+                  alt={`Children learning in the classroom ${index + 1}`}
+                  style={{ height: "240px", width: "100%", objectFit: "cover", borderRadius: "24px", border: "1px solid var(--border)" }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="section section-tight">
         <div className="container">
           <div className="row gy-4">
@@ -317,19 +303,20 @@ function About() {
                 <div className="section-title">Mission</div>
                 <h3>Build strong foundations for every child.</h3>
                 <p className="text-muted mb-0">
-                  We prepare children before primary school, strengthen
-                  foundational learning, and protect the right of every child to
-                  stay in school.
+                  To empower refugee communities through education, skills
+                  development, peacebuilding, women&apos;s empowerment, and
+                  community-led initiatives that promote resilience and
+                  self-reliance.
                 </p>
               </div>
             </div>
             <div className="col-lg-6">
               <div className="glow-card">
                 <div className="section-title">Vision</div>
-                <h3>Communities that rise together.</h3>
+                <h3>A living society built on profitable knowledge.</h3>
                 <p className="text-muted mb-0">
-                  A generation of confident learners and resilient families
-                  where education builds unity, dignity, and opportunity.
+                  To re-create a living society where individuals have
+                  profitable knowledge that can benefit the society.
                 </p>
               </div>
             </div>

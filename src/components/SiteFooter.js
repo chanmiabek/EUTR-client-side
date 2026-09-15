@@ -42,7 +42,6 @@ function SiteFooter() {
               <li className="mb-2"><Link className="footer-link" to="/join-us">Work with EUR</Link></li>
               <li className="mb-2"><Link className="footer-link" to="/events">Events</Link></li>
               <li className="mb-2"><Link className="footer-link" to="/donate">Donate</Link></li>
-              <li className="mb-2"><Link className="footer-link" to="./Admin/login">Admin Tools</Link></li>
             </ul>
           </div>
           <div className="col-6 col-lg-2">

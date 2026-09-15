@@ -4,7 +4,6 @@ import { resolveItemImage } from "../utils/media";
 import eventImage1 from "../assets/gallery-1.jpeg";
 import eventImage2 from "../assets/gallery-2.jpeg";
 import eventImage3 from "../assets/gallery-3.jpeg";
-import heroImage from "../assets/hero.jpeg";
 import EventOverviewVideoSection from "../components/EventOverviewVideoSection";
 
 const fallbackEvents = [
@@ -116,7 +115,7 @@ function Events() {
   return (
     <div>
       <section className="hero page-image-hero">
-        <img className="hero-bg" src={heroImage} alt="Events hero" />
+        <img className="hero-bg" src={eventImage3} alt="Children taking part in a learning session" />
         <div className="container hero-content">
           <div className="row align-items-center gy-4">
             <div className="col-lg-8 section-reveal">

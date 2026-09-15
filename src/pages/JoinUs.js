@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PageHero from "../components/PageHero";
-import heroImage from "../assets/hero.jpeg";
+import heroImage from "../assets/image-6.jpeg";
 import { postJson } from "../utils/api";
 
 const initialForm = {

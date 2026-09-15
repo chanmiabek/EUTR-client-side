@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import PageHero from "../components/PageHero";
-import heroImage from "../assets/hero.jpeg";
 import { postJson, readApiError } from "../utils/api";
 import {
   ADMIN_SESSION_DURATION_MS,
@@ -25,7 +23,7 @@ function AdminLogin() {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   if (existingSession?.token) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   const setMessage = (type, message) => setStatus({ type, message });
@@ -47,7 +45,7 @@ function AdminLogin() {
         expiresAt: Date.now() + ADMIN_SESSION_DURATION_MS
       });
       setSessionExpired(false);
-      navigate(location.state?.from?.pathname || "/admin", { replace: true });
+          navigate(location.state?.from?.pathname || "/admin/dashboard", { replace: true });
     } catch (error) {
       setMessage("error", error.message || "Unable to log in.");
     } finally {
@@ -98,17 +96,6 @@ function AdminLogin() {
 
   return (
     <div>
-      <PageHero
-        eyebrow="Admin"
-        title="Protected admin access."
-        copy="This page is intentionally hidden from the public navigation. Sign in to continue."
-        backgroundImage={heroImage}
-        backgroundAlt="Admin login hero"
-      >
-        <h5 className="mb-3">Private access</h5>
-        <p className="text-muted mb-0">This area is restricted to authorized administrators only.</p>
-      </PageHero>
-
       <section className="section section-tight">
         <div className="container">
           <div className="row justify-content-center">

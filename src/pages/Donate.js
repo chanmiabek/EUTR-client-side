@@ -1,5 +1,5 @@
 import PageHero from "../components/PageHero";
-import heroImage from "../assets/hero.jpeg";
+import heroImage from "../assets/image-5.jpeg";
 import "../pages/Donate.css";
 
 function Donate() {

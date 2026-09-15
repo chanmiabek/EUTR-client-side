@@ -10,6 +10,7 @@ import About from "./pages/About";
 import Donate from "./pages/Donate";
 import WorkWithEurt from "./pages/WorkWithEurt";
 import Volunteer from "./pages/Volunteer";
+import VolunteerApply from "./pages/VolunteerApply";
 import JoinUs from "./pages/JoinUs";
 import Contact from "./pages/Contact";
 import Programs from "./pages/programs";
@@ -36,14 +37,15 @@ function App() {
           <Route path="/donate" element={<Donate />} />
           <Route path="/work-with-eurt" element={<WorkWithEurt />} />
           <Route path="/volunteer" element={<Volunteer />} />
+          <Route path="/volunteer/apply" element={<VolunteerApply />} />
           <Route path="/join-us" element={<JoinUs />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/programs" element={<Programs />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/events" element={<Events />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLogin />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<AdminContent />} />
+            <Route path="/admin/dashboard" element={<AdminContent />} />
           </Route>
         </Routes>
       </main>

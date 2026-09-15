@@ -7,7 +7,7 @@ function ProtectedRoute() {
   const session = typeof window !== "undefined" ? readStoredSession() : null;
 
   if (!session?.token) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
+    return <Navigate to="/admin" replace state={{ from: location }} />;
   }
 
   return <Outlet />;
